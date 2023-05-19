@@ -3,7 +3,30 @@
 package buildkite
 
 import (
+	"encoding/json"
+	"fmt"
+
 	"github.com/Khan/genqlient/graphql"
+)
+
+// All the possible build retention periods, depending on your billing plan
+type BuildRetentionPeriods string
+
+const (
+	// 30 days
+	BuildRetentionPeriodsDays30 BuildRetentionPeriods = "DAYS_30"
+	// 60 days
+	BuildRetentionPeriodsDays60 BuildRetentionPeriods = "DAYS_60"
+	// 90 days
+	BuildRetentionPeriodsDays90 BuildRetentionPeriods = "DAYS_90"
+	// 6 months
+	BuildRetentionPeriodsMonths6 BuildRetentionPeriods = "MONTHS_6"
+	// 12 months
+	BuildRetentionPeriodsMonths12 BuildRetentionPeriods = "MONTHS_12"
+	// 18 months
+	BuildRetentionPeriodsMonths18 BuildRetentionPeriods = "MONTHS_18"
+	// 2 years
+	BuildRetentionPeriodsYears2 BuildRetentionPeriods = "YEARS_2"
 )
 
 // The roles a user can be within a team
@@ -26,6 +49,140 @@ const (
 	GenqlientTeamPrivacySecret GenqlientTeamPrivacy = "SECRET"
 )
 
+// The access levels that can be assigned to a pipeline
+type PipelineAccessLevels string
+
+const (
+	// Allows edits, builds and reads
+	PipelineAccessLevelsManageBuildAndRead PipelineAccessLevels = "MANAGE_BUILD_AND_READ"
+	// Allows builds and read only
+	PipelineAccessLevelsBuildAndRead PipelineAccessLevels = "BUILD_AND_READ"
+	// Read only - no builds or edits
+	PipelineAccessLevelsReadOnly PipelineAccessLevels = "READ_ONLY"
+)
+
+// Step definition for a pipeline
+type PipelineStepsInput struct {
+	// Step definition for a pipeline
+	Yaml string `json:"yaml"`
+}
+
+// GetYaml returns PipelineStepsInput.Yaml, and is useful for accessing the field via an interface.
+func (v *PipelineStepsInput) GetYaml() string { return v.Yaml }
+
+// Tag associated with a pipeline
+type PipelineTagInput struct {
+	// Tag associated with a pipeline
+	Label string `json:"label"`
+}
+
+// GetLabel returns PipelineTagInput.Label, and is useful for accessing the field via an interface.
+func (v *PipelineTagInput) GetLabel() string { return v.Label }
+
+// Used to assign teams to pipelines
+type PipelineTeamAssignmentInput struct {
+	// Used to assign teams to pipelines
+	Id string `json:"id"`
+	// Used to assign teams to pipelines
+	AccessLevel PipelineAccessLevels `json:"accessLevel"`
+}
+
+// GetId returns PipelineTeamAssignmentInput.Id, and is useful for accessing the field via an interface.
+func (v *PipelineTeamAssignmentInput) GetId() string { return v.Id }
+
+// GetAccessLevel returns PipelineTeamAssignmentInput.AccessLevel, and is useful for accessing the field via an interface.
+func (v *PipelineTeamAssignmentInput) GetAccessLevel() PipelineAccessLevels { return v.AccessLevel }
+
+// The visibility of the pipeline
+type PipelineVisibility string
+
+const (
+	// The pipeline is public
+	PipelineVisibilityPublic PipelineVisibility = "PUBLIC"
+	// The pipeline is private
+	PipelineVisibilityPrivate PipelineVisibility = "PRIVATE"
+)
+
+// __createPipelineInput is used internally by genqlient
+type __createPipelineInput struct {
+	OrganizationId                       string                        `json:"organizationId"`
+	Name                                 string                        `json:"name"`
+	Repository                           string                        `json:"repository"`
+	Steps                                PipelineStepsInput            `json:"steps"`
+	Teams                                []PipelineTeamAssignmentInput `json:"teams"`
+	ClusterId                            string                        `json:"clusterId"`
+	Description                          string                        `json:"description"`
+	SkipIntermediateBuilds               bool                          `json:"skipIntermediateBuilds"`
+	SkipIntermediateBuildsBranchFilter   string                        `json:"skipIntermediateBuildsBranchFilter"`
+	CancelIntermediateBuilds             bool                          `json:"cancelIntermediateBuilds"`
+	CancelIntermediateBuildsBranchFilter string                        `json:"cancelIntermediateBuildsBranchFilter"`
+	Visibility                           PipelineVisibility            `json:"visibility"`
+	AllowRebuilds                        bool                          `json:"allowRebuilds"`
+	DefaultTimeoutInMinutes              int                           `json:"defaultTimeoutInMinutes"`
+	MaximumTimeoutInMinutes              int                           `json:"maximumTimeoutInMinutes"`
+	DefaultBranch                        string                        `json:"defaultBranch"`
+	Tags                                 []PipelineTagInput            `json:"tags"`
+	BranchConfiguration                  string                        `json:"branchConfiguration"`
+}
+
+// GetOrganizationId returns __createPipelineInput.OrganizationId, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetOrganizationId() string { return v.OrganizationId }
+
+// GetName returns __createPipelineInput.Name, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetName() string { return v.Name }
+
+// GetRepository returns __createPipelineInput.Repository, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetRepository() string { return v.Repository }
+
+// GetSteps returns __createPipelineInput.Steps, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetSteps() PipelineStepsInput { return v.Steps }
+
+// GetTeams returns __createPipelineInput.Teams, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetTeams() []PipelineTeamAssignmentInput { return v.Teams }
+
+// GetClusterId returns __createPipelineInput.ClusterId, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetClusterId() string { return v.ClusterId }
+
+// GetDescription returns __createPipelineInput.Description, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetDescription() string { return v.Description }
+
+// GetSkipIntermediateBuilds returns __createPipelineInput.SkipIntermediateBuilds, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetSkipIntermediateBuilds() bool { return v.SkipIntermediateBuilds }
+
+// GetSkipIntermediateBuildsBranchFilter returns __createPipelineInput.SkipIntermediateBuildsBranchFilter, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetSkipIntermediateBuildsBranchFilter() string {
+	return v.SkipIntermediateBuildsBranchFilter
+}
+
+// GetCancelIntermediateBuilds returns __createPipelineInput.CancelIntermediateBuilds, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetCancelIntermediateBuilds() bool { return v.CancelIntermediateBuilds }
+
+// GetCancelIntermediateBuildsBranchFilter returns __createPipelineInput.CancelIntermediateBuildsBranchFilter, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetCancelIntermediateBuildsBranchFilter() string {
+	return v.CancelIntermediateBuildsBranchFilter
+}
+
+// GetVisibility returns __createPipelineInput.Visibility, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetVisibility() PipelineVisibility { return v.Visibility }
+
+// GetAllowRebuilds returns __createPipelineInput.AllowRebuilds, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetAllowRebuilds() bool { return v.AllowRebuilds }
+
+// GetDefaultTimeoutInMinutes returns __createPipelineInput.DefaultTimeoutInMinutes, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetDefaultTimeoutInMinutes() int { return v.DefaultTimeoutInMinutes }
+
+// GetMaximumTimeoutInMinutes returns __createPipelineInput.MaximumTimeoutInMinutes, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetMaximumTimeoutInMinutes() int { return v.MaximumTimeoutInMinutes }
+
+// GetDefaultBranch returns __createPipelineInput.DefaultBranch, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetDefaultBranch() string { return v.DefaultBranch }
+
+// GetTags returns __createPipelineInput.Tags, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetTags() []PipelineTagInput { return v.Tags }
+
+// GetBranchConfiguration returns __createPipelineInput.BranchConfiguration, and is useful for accessing the field via an interface.
+func (v *__createPipelineInput) GetBranchConfiguration() string { return v.BranchConfiguration }
+
 // __getOrganizationInput is used internally by genqlient
 type __getOrganizationInput struct {
 	Slug string `json:"slug"`
@@ -33,6 +190,14 @@ type __getOrganizationInput struct {
 
 // GetSlug returns __getOrganizationInput.Slug, and is useful for accessing the field via an interface.
 func (v *__getOrganizationInput) GetSlug() string { return v.Slug }
+
+// __getPipelineInput is used internally by genqlient
+type __getPipelineInput struct {
+	Slug string `json:"slug"`
+}
+
+// GetSlug returns __getPipelineInput.Slug, and is useful for accessing the field via an interface.
+func (v *__getPipelineInput) GetSlug() string { return v.Slug }
 
 // __getTeamInput is used internally by genqlient
 type __getTeamInput struct {
@@ -53,6 +218,56 @@ func (v *__setApiIpAddressesInput) GetOrganizationID() string { return v.Organiz
 
 // GetIpAddresses returns __setApiIpAddressesInput.IpAddresses, and is useful for accessing the field via an interface.
 func (v *__setApiIpAddressesInput) GetIpAddresses() string { return v.IpAddresses }
+
+// createPipelinePipelineCreatePipelineCreatePayload includes the requested fields of the GraphQL type PipelineCreatePayload.
+// The GraphQL type's documentation follows.
+//
+// Autogenerated return type of PipelineCreate.
+type createPipelinePipelineCreatePipelineCreatePayload struct {
+	Pipeline createPipelinePipelineCreatePipelineCreatePayloadPipeline `json:"pipeline"`
+}
+
+// GetPipeline returns createPipelinePipelineCreatePipelineCreatePayload.Pipeline, and is useful for accessing the field via an interface.
+func (v *createPipelinePipelineCreatePipelineCreatePayload) GetPipeline() createPipelinePipelineCreatePipelineCreatePayloadPipeline {
+	return v.Pipeline
+}
+
+// createPipelinePipelineCreatePipelineCreatePayloadPipeline includes the requested fields of the GraphQL type Pipeline.
+// The GraphQL type's documentation follows.
+//
+// A pipeline
+type createPipelinePipelineCreatePipelineCreatePayloadPipeline struct {
+	Id string `json:"id"`
+	// The name of the pipeline
+	Name string `json:"name"`
+	// The URL for the pipeline
+	Url string `json:"url"`
+	// The slug of the pipeline
+	Slug string `json:"slug"`
+}
+
+// GetId returns createPipelinePipelineCreatePipelineCreatePayloadPipeline.Id, and is useful for accessing the field via an interface.
+func (v *createPipelinePipelineCreatePipelineCreatePayloadPipeline) GetId() string { return v.Id }
+
+// GetName returns createPipelinePipelineCreatePipelineCreatePayloadPipeline.Name, and is useful for accessing the field via an interface.
+func (v *createPipelinePipelineCreatePipelineCreatePayloadPipeline) GetName() string { return v.Name }
+
+// GetUrl returns createPipelinePipelineCreatePipelineCreatePayloadPipeline.Url, and is useful for accessing the field via an interface.
+func (v *createPipelinePipelineCreatePipelineCreatePayloadPipeline) GetUrl() string { return v.Url }
+
+// GetSlug returns createPipelinePipelineCreatePipelineCreatePayloadPipeline.Slug, and is useful for accessing the field via an interface.
+func (v *createPipelinePipelineCreatePipelineCreatePayloadPipeline) GetSlug() string { return v.Slug }
+
+// createPipelineResponse is returned by createPipeline on success.
+type createPipelineResponse struct {
+	// Create a pipeline.
+	PipelineCreate createPipelinePipelineCreatePipelineCreatePayload `json:"pipelineCreate"`
+}
+
+// GetPipelineCreate returns createPipelineResponse.PipelineCreate, and is useful for accessing the field via an interface.
+func (v *createPipelineResponse) GetPipelineCreate() createPipelinePipelineCreatePipelineCreatePayload {
+	return v.PipelineCreate
+}
 
 // getOrganizationOrganization includes the requested fields of the GraphQL type Organization.
 // The GraphQL type's documentation follows.
@@ -87,6 +302,765 @@ type getOrganizationResponse struct {
 func (v *getOrganizationResponse) GetOrganization() getOrganizationOrganization {
 	return v.Organization
 }
+
+// getPipelinePipeline includes the requested fields of the GraphQL type Pipeline.
+// The GraphQL type's documentation follows.
+//
+// A pipeline
+type getPipelinePipeline struct {
+	// Whether existing builds can be rebuilt as new builds.
+	AllowRebuilds bool `json:"allowRebuilds"`
+	// Whether this pipeline has been archived
+	Archived bool `json:"archived"`
+	// A branch filter pattern to limit which pushed branches trigger builds on this pipeline.
+	BranchConfiguration string `json:"branchConfiguration"`
+	// Choose to keep builds or remove them after a set time period. Pipelines are scanned once a day for builds that can be removed according to these settings.
+	BuildRetentionEnabled bool `json:"buildRetentionEnabled"`
+	// The minimum number of builds to keep in the pipeline regardless of how old the builds are.
+	BuildRetentionNumber int `json:"buildRetentionNumber"`
+	// How long is a build kept before it is automatically removed.
+	BuildRetentionPeriod BuildRetentionPeriods `json:"buildRetentionPeriod"`
+	// When a new build is created on a branch, any previous builds that are running on the same branch will be automatically cancelled
+	CancelIntermediateBuilds bool `json:"cancelIntermediateBuilds"`
+	// Limit which branches build cancelling applies to, for example `!main` will ensure that the main branch won't have it's builds automatically cancelled.
+	CancelIntermediateBuildsBranchFilter string                     `json:"cancelIntermediateBuildsBranchFilter"`
+	Cluster                              getPipelinePipelineCluster `json:"cluster"`
+	// The default branch for this pipeline
+	DefaultBranch string `json:"defaultBranch"`
+	// The default timeout in minutes for all command steps in this pipeline. This can still be overridden in any command step
+	DefaultTimeoutInMinutes int    `json:"defaultTimeoutInMinutes"`
+	Id                      string `json:"id"`
+	// The maximum timeout in minutes for all command steps in this pipeline. Any command step without a timeout or with a timeout greater than this value will be set to this value.
+	MaximumTimeoutInMinutes int `json:"maximumTimeoutInMinutes"`
+	// The name of the pipeline
+	Name string `json:"name"`
+	// The repository for this pipeline
+	Repository getPipelinePipelineRepository `json:"repository"`
+	// When a new build is created on a branch, any previous builds that haven't yet started on the same branch will be automatically marked as skipped.
+	SkipIntermediateBuilds bool `json:"skipIntermediateBuilds"`
+	// Limit which branches build skipping applies to, for example `!main` will ensure that the main branch won't have it's builds automatically skipped.
+	SkipIntermediateBuildsBranchFilter string `json:"skipIntermediateBuildsBranchFilter"`
+	// The slug of the pipeline
+	Slug  string                   `json:"slug"`
+	Steps getPipelinePipelineSteps `json:"steps"`
+	// Tags that have been given to this pipeline
+	Tags []getPipelinePipelineTagsPipelineTag `json:"tags"`
+	// Teams associated with this pipeline
+	Teams getPipelinePipelineTeamsTeamPipelineConnection `json:"teams"`
+	// The URL for the pipeline
+	Url string `json:"url"`
+	// The UUID of the pipeline
+	Uuid string `json:"uuid"`
+	// Whether this pipeline is visible to everyone, including people outside this organization
+	Visibility PipelineVisibility `json:"visibility"`
+	// The URL to use in your repository settings for commit webhooks
+	WebhookURL string `json:"webhookURL"`
+}
+
+// GetAllowRebuilds returns getPipelinePipeline.AllowRebuilds, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetAllowRebuilds() bool { return v.AllowRebuilds }
+
+// GetArchived returns getPipelinePipeline.Archived, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetArchived() bool { return v.Archived }
+
+// GetBranchConfiguration returns getPipelinePipeline.BranchConfiguration, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetBranchConfiguration() string { return v.BranchConfiguration }
+
+// GetBuildRetentionEnabled returns getPipelinePipeline.BuildRetentionEnabled, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetBuildRetentionEnabled() bool { return v.BuildRetentionEnabled }
+
+// GetBuildRetentionNumber returns getPipelinePipeline.BuildRetentionNumber, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetBuildRetentionNumber() int { return v.BuildRetentionNumber }
+
+// GetBuildRetentionPeriod returns getPipelinePipeline.BuildRetentionPeriod, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetBuildRetentionPeriod() BuildRetentionPeriods {
+	return v.BuildRetentionPeriod
+}
+
+// GetCancelIntermediateBuilds returns getPipelinePipeline.CancelIntermediateBuilds, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetCancelIntermediateBuilds() bool { return v.CancelIntermediateBuilds }
+
+// GetCancelIntermediateBuildsBranchFilter returns getPipelinePipeline.CancelIntermediateBuildsBranchFilter, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetCancelIntermediateBuildsBranchFilter() string {
+	return v.CancelIntermediateBuildsBranchFilter
+}
+
+// GetCluster returns getPipelinePipeline.Cluster, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetCluster() getPipelinePipelineCluster { return v.Cluster }
+
+// GetDefaultBranch returns getPipelinePipeline.DefaultBranch, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetDefaultBranch() string { return v.DefaultBranch }
+
+// GetDefaultTimeoutInMinutes returns getPipelinePipeline.DefaultTimeoutInMinutes, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetDefaultTimeoutInMinutes() int { return v.DefaultTimeoutInMinutes }
+
+// GetId returns getPipelinePipeline.Id, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetId() string { return v.Id }
+
+// GetMaximumTimeoutInMinutes returns getPipelinePipeline.MaximumTimeoutInMinutes, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetMaximumTimeoutInMinutes() int { return v.MaximumTimeoutInMinutes }
+
+// GetName returns getPipelinePipeline.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetName() string { return v.Name }
+
+// GetRepository returns getPipelinePipeline.Repository, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetRepository() getPipelinePipelineRepository { return v.Repository }
+
+// GetSkipIntermediateBuilds returns getPipelinePipeline.SkipIntermediateBuilds, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetSkipIntermediateBuilds() bool { return v.SkipIntermediateBuilds }
+
+// GetSkipIntermediateBuildsBranchFilter returns getPipelinePipeline.SkipIntermediateBuildsBranchFilter, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetSkipIntermediateBuildsBranchFilter() string {
+	return v.SkipIntermediateBuildsBranchFilter
+}
+
+// GetSlug returns getPipelinePipeline.Slug, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetSlug() string { return v.Slug }
+
+// GetSteps returns getPipelinePipeline.Steps, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetSteps() getPipelinePipelineSteps { return v.Steps }
+
+// GetTags returns getPipelinePipeline.Tags, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetTags() []getPipelinePipelineTagsPipelineTag { return v.Tags }
+
+// GetTeams returns getPipelinePipeline.Teams, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetTeams() getPipelinePipelineTeamsTeamPipelineConnection {
+	return v.Teams
+}
+
+// GetUrl returns getPipelinePipeline.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetUrl() string { return v.Url }
+
+// GetUuid returns getPipelinePipeline.Uuid, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetUuid() string { return v.Uuid }
+
+// GetVisibility returns getPipelinePipeline.Visibility, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetVisibility() PipelineVisibility { return v.Visibility }
+
+// GetWebhookURL returns getPipelinePipeline.WebhookURL, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetWebhookURL() string { return v.WebhookURL }
+
+// getPipelinePipelineCluster includes the requested fields of the GraphQL type Cluster.
+type getPipelinePipelineCluster struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// GetId returns getPipelinePipelineCluster.Id, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineCluster) GetId() string { return v.Id }
+
+// GetName returns getPipelinePipelineCluster.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineCluster) GetName() string { return v.Name }
+
+// getPipelinePipelineRepository includes the requested fields of the GraphQL type Repository.
+// The GraphQL type's documentation follows.
+//
+// A repository associated with a pipeline
+type getPipelinePipelineRepository struct {
+	// The repository’s provider
+	Provider getPipelinePipelineRepositoryProvider `json:"-"`
+	// The git URL for this repository
+	Url string `json:"url"`
+}
+
+// GetProvider returns getPipelinePipelineRepository.Provider, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepository) GetProvider() getPipelinePipelineRepositoryProvider {
+	return v.Provider
+}
+
+// GetUrl returns getPipelinePipelineRepository.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepository) GetUrl() string { return v.Url }
+
+func (v *getPipelinePipelineRepository) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getPipelinePipelineRepository
+		Provider json.RawMessage `json:"provider"`
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getPipelinePipelineRepository = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	{
+		dst := &v.Provider
+		src := firstPass.Provider
+		if len(src) != 0 && string(src) != "null" {
+			err = __unmarshalgetPipelinePipelineRepositoryProvider(
+				src, dst)
+			if err != nil {
+				return fmt.Errorf(
+					"Unable to unmarshal getPipelinePipelineRepository.Provider: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+type __premarshalgetPipelinePipelineRepository struct {
+	Provider json.RawMessage `json:"provider"`
+
+	Url string `json:"url"`
+}
+
+func (v *getPipelinePipelineRepository) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getPipelinePipelineRepository) __premarshalJSON() (*__premarshalgetPipelinePipelineRepository, error) {
+	var retval __premarshalgetPipelinePipelineRepository
+
+	{
+
+		dst := &retval.Provider
+		src := v.Provider
+		var err error
+		*dst, err = __marshalgetPipelinePipelineRepositoryProvider(
+			&src)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"Unable to marshal getPipelinePipelineRepository.Provider: %w", err)
+		}
+	}
+	retval.Url = v.Url
+	return &retval, nil
+}
+
+// getPipelinePipelineRepositoryProvider includes the requested fields of the GraphQL interface RepositoryProvider.
+//
+// getPipelinePipelineRepositoryProvider is implemented by the following types:
+// getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk
+// getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket
+// getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer
+// getPipelinePipelineRepositoryProviderRepositoryProviderCodebase
+// getPipelinePipelineRepositoryProviderRepositoryProviderGithub
+// getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise
+// getPipelinePipelineRepositoryProviderRepositoryProviderGitlab
+// getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity
+// getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise
+// getPipelinePipelineRepositoryProviderRepositoryProviderUnknown
+type getPipelinePipelineRepositoryProvider interface {
+	implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider()
+	// GetTypename returns the receiver's concrete GraphQL type-name (see interface doc for possible values).
+	GetTypename() string
+	// GetName returns the interface-field "name" from its implementation.
+	GetName() string
+	// GetUrl returns the interface-field "url" from its implementation.
+	GetUrl() string
+}
+
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderCodebase) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithub) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlab) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderUnknown) implementsGraphQLInterfacegetPipelinePipelineRepositoryProvider() {
+}
+
+func __unmarshalgetPipelinePipelineRepositoryProvider(b []byte, v *getPipelinePipelineRepositoryProvider) error {
+	if string(b) == "null" {
+		return nil
+	}
+
+	var tn struct {
+		TypeName string `json:"__typename"`
+	}
+	err := json.Unmarshal(b, &tn)
+	if err != nil {
+		return err
+	}
+
+	switch tn.TypeName {
+	case "RepositoryProviderBeanstalk":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderBitbucket":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderBitbucketServer":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderCodebase":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderCodebase)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderGithub":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderGithub)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderGithubEnterprise":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderGitlab":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderGitlab)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderGitlabCommunity":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderGitlabEnterprise":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise)
+		return json.Unmarshal(b, *v)
+	case "RepositoryProviderUnknown":
+		*v = new(getPipelinePipelineRepositoryProviderRepositoryProviderUnknown)
+		return json.Unmarshal(b, *v)
+	case "":
+		return fmt.Errorf(
+			"response was missing RepositoryProvider.__typename")
+	default:
+		return fmt.Errorf(
+			`unexpected concrete type for getPipelinePipelineRepositoryProvider: "%v"`, tn.TypeName)
+	}
+}
+
+func __marshalgetPipelinePipelineRepositoryProvider(v *getPipelinePipelineRepositoryProvider) ([]byte, error) {
+
+	var typename string
+	switch v := (*v).(type) {
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk:
+		typename = "RepositoryProviderBeanstalk"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket:
+		typename = "RepositoryProviderBitbucket"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer:
+		typename = "RepositoryProviderBitbucketServer"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderCodebase:
+		typename = "RepositoryProviderCodebase"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderCodebase
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderGithub:
+		typename = "RepositoryProviderGithub"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderGithub
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise:
+		typename = "RepositoryProviderGithubEnterprise"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderGitlab:
+		typename = "RepositoryProviderGitlab"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderGitlab
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity:
+		typename = "RepositoryProviderGitlabCommunity"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise:
+		typename = "RepositoryProviderGitlabEnterprise"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise
+		}{typename, v}
+		return json.Marshal(result)
+	case *getPipelinePipelineRepositoryProviderRepositoryProviderUnknown:
+		typename = "RepositoryProviderUnknown"
+
+		result := struct {
+			TypeName string `json:"__typename"`
+			*getPipelinePipelineRepositoryProviderRepositoryProviderUnknown
+		}{typename, v}
+		return json.Marshal(result)
+	case nil:
+		return []byte("null"), nil
+	default:
+		return nil, fmt.Errorf(
+			`unexpected concrete type for getPipelinePipelineRepositoryProvider: "%T"`, v)
+	}
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk includes the requested fields of the GraphQL type RepositoryProviderBeanstalk.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by Beanstalk
+type getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBeanstalk) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket includes the requested fields of the GraphQL type RepositoryProviderBitbucket.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by Bitbucket
+type getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucket) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer includes the requested fields of the GraphQL type RepositoryProviderBitbucketServer.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by Bitbucket Server
+type getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderBitbucketServer) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderCodebase includes the requested fields of the GraphQL type RepositoryProviderCodebase.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by Codebase
+type getPipelinePipelineRepositoryProviderRepositoryProviderCodebase struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderCodebase.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderCodebase) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderCodebase.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderCodebase) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderCodebase.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderCodebase) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderGithub includes the requested fields of the GraphQL type RepositoryProviderGithub.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by GitHub
+type getPipelinePipelineRepositoryProviderRepositoryProviderGithub struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderGithub.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithub) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderGithub.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithub) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderGithub.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithub) GetUrl() string { return v.Url }
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise includes the requested fields of the GraphQL type RepositoryProviderGithubEnterprise.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by GitHub Enterprise
+type getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGithubEnterprise) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderGitlab includes the requested fields of the GraphQL type RepositoryProviderGitlab.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by GitLab
+type getPipelinePipelineRepositoryProviderRepositoryProviderGitlab struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlab.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlab) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlab.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlab) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlab.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlab) GetUrl() string { return v.Url }
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity includes the requested fields of the GraphQL type RepositoryProviderGitlabCommunity.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by GitLab Community Edition
+type getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabCommunity) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise includes the requested fields of the GraphQL type RepositoryProviderGitlabEnterprise.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by GitLab Enterprise Edition
+type getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderGitlabEnterprise) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineRepositoryProviderRepositoryProviderUnknown includes the requested fields of the GraphQL type RepositoryProviderUnknown.
+// The GraphQL type's documentation follows.
+//
+// A pipeline's repository is being provided by a service unknown to Buildkite
+type getPipelinePipelineRepositoryProviderRepositoryProviderUnknown struct {
+	Typename string `json:"__typename"`
+	Name     string `json:"name"`
+	Url      string `json:"url"`
+}
+
+// GetTypename returns getPipelinePipelineRepositoryProviderRepositoryProviderUnknown.Typename, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderUnknown) GetTypename() string {
+	return v.Typename
+}
+
+// GetName returns getPipelinePipelineRepositoryProviderRepositoryProviderUnknown.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderUnknown) GetName() string {
+	return v.Name
+}
+
+// GetUrl returns getPipelinePipelineRepositoryProviderRepositoryProviderUnknown.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepositoryProviderRepositoryProviderUnknown) GetUrl() string {
+	return v.Url
+}
+
+// getPipelinePipelineSteps includes the requested fields of the GraphQL type PipelineSteps.
+// The GraphQL type's documentation follows.
+//
+// Steps defined on a pipeline
+type getPipelinePipelineSteps struct {
+	// A YAML representation of the pipeline steps
+	Yaml string `json:"yaml"`
+}
+
+// GetYaml returns getPipelinePipelineSteps.Yaml, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineSteps) GetYaml() string { return v.Yaml }
+
+// getPipelinePipelineTagsPipelineTag includes the requested fields of the GraphQL type PipelineTag.
+// The GraphQL type's documentation follows.
+//
+// A tag associated with a pipeline
+type getPipelinePipelineTagsPipelineTag struct {
+	// The label for this tag
+	Label string `json:"label"`
+}
+
+// GetLabel returns getPipelinePipelineTagsPipelineTag.Label, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineTagsPipelineTag) GetLabel() string { return v.Label }
+
+// getPipelinePipelineTeamsTeamPipelineConnection includes the requested fields of the GraphQL type TeamPipelineConnection.
+// The GraphQL type's documentation follows.
+//
+// A collection of TeamPipeline records
+type getPipelinePipelineTeamsTeamPipelineConnection struct {
+	Edges []getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdge `json:"edges"`
+}
+
+// GetEdges returns getPipelinePipelineTeamsTeamPipelineConnection.Edges, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineTeamsTeamPipelineConnection) GetEdges() []getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdge {
+	return v.Edges
+}
+
+// getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdge includes the requested fields of the GraphQL type TeamPipelineEdge.
+type getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdge struct {
+	Node getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline `json:"node"`
+}
+
+// GetNode returns getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdge.Node, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdge) GetNode() getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline {
+	return v.Node
+}
+
+// getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline includes the requested fields of the GraphQL type TeamPipeline.
+// The GraphQL type's documentation follows.
+//
+// An pipeline that's been assigned to a team
+type getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline struct {
+	Id string `json:"id"`
+	// The team associated with this team member
+	Team getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipelineTeam `json:"team"`
+}
+
+// GetId returns getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline.Id, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline) GetId() string {
+	return v.Id
+}
+
+// GetTeam returns getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline.Team, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipeline) GetTeam() getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipelineTeam {
+	return v.Team
+}
+
+// getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipelineTeam includes the requested fields of the GraphQL type Team.
+// The GraphQL type's documentation follows.
+//
+// An organization team
+type getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipelineTeam struct {
+	// The name of the team
+	Name string `json:"name"`
+}
+
+// GetName returns getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipelineTeam.Name, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNodeTeamPipelineTeam) GetName() string {
+	return v.Name
+}
+
+// getPipelineResponse is returned by getPipeline on success.
+type getPipelineResponse struct {
+	// Find a pipeline
+	Pipeline getPipelinePipeline `json:"pipeline"`
+}
+
+// GetPipeline returns getPipelineResponse.Pipeline, and is useful for accessing the field via an interface.
+func (v *getPipelineResponse) GetPipeline() getPipelinePipeline { return v.Pipeline }
 
 // getTeamResponse is returned by getTeam on success.
 type getTeamResponse struct {
@@ -186,6 +1160,71 @@ func (v *setApiIpAddressesResponse) GetOrganizationApiIpAllowlistUpdate() setApi
 	return v.OrganizationApiIpAllowlistUpdate
 }
 
+func createPipeline(
+	client graphql.Client,
+	organizationId string,
+	name string,
+	repository string,
+	steps PipelineStepsInput,
+	teams []PipelineTeamAssignmentInput,
+	clusterId string,
+	description string,
+	skipIntermediateBuilds bool,
+	skipIntermediateBuildsBranchFilter string,
+	cancelIntermediateBuilds bool,
+	cancelIntermediateBuildsBranchFilter string,
+	visibility PipelineVisibility,
+	allowRebuilds bool,
+	defaultTimeoutInMinutes int,
+	maximumTimeoutInMinutes int,
+	defaultBranch string,
+	tags []PipelineTagInput,
+	branchConfiguration string,
+) (*createPipelineResponse, error) {
+	__input := __createPipelineInput{
+		OrganizationId:                       organizationId,
+		Name:                                 name,
+		Repository:                           repository,
+		Steps:                                steps,
+		Teams:                                teams,
+		ClusterId:                            clusterId,
+		Description:                          description,
+		SkipIntermediateBuilds:               skipIntermediateBuilds,
+		SkipIntermediateBuildsBranchFilter:   skipIntermediateBuildsBranchFilter,
+		CancelIntermediateBuilds:             cancelIntermediateBuilds,
+		CancelIntermediateBuildsBranchFilter: cancelIntermediateBuildsBranchFilter,
+		Visibility:                           visibility,
+		AllowRebuilds:                        allowRebuilds,
+		DefaultTimeoutInMinutes:              defaultTimeoutInMinutes,
+		MaximumTimeoutInMinutes:              maximumTimeoutInMinutes,
+		DefaultBranch:                        defaultBranch,
+		Tags:                                 tags,
+		BranchConfiguration:                  branchConfiguration,
+	}
+	var err error
+
+	var retval createPipelineResponse
+	err = client.MakeRequest(
+		nil,
+		"createPipeline",
+		`
+mutation createPipeline ($organizationId: ID!, $name: String!, $repository: String!, $steps: PipelineStepsInput!, $teams: [PipelineTeamAssignmentInput!], $clusterId: ID, $description: String, $skipIntermediateBuilds: Boolean, $skipIntermediateBuildsBranchFilter: String, $cancelIntermediateBuilds: Boolean, $cancelIntermediateBuildsBranchFilter: String, $visibility: PipelineVisibility, $allowRebuilds: Boolean, $defaultTimeoutInMinutes: Int, $maximumTimeoutInMinutes: Int, $defaultBranch: String, $tags: [PipelineTagInput!], $branchConfiguration: String) {
+	pipelineCreate(input: {organizationId:$organizationId,name:$name,repository:{url:$repository},description:$description,steps:$steps,teams:$teams,clusterId:$clusterId,skipIntermediateBuilds:$skipIntermediateBuilds,skipIntermediateBuildsBranchFilter:$skipIntermediateBuildsBranchFilter,cancelIntermediateBuilds:$cancelIntermediateBuilds,cancelIntermediateBuildsBranchFilter:$cancelIntermediateBuildsBranchFilter,visibility:$visibility,allowRebuilds:$allowRebuilds,defaultTimeoutInMinutes:$defaultTimeoutInMinutes,maximumTimeoutInMinutes:$maximumTimeoutInMinutes,defaultBranch:$defaultBranch,tags:$tags,branchConfiguration:$branchConfiguration}) {
+		pipeline {
+			id
+			name
+			url
+			slug
+		}
+	}
+}
+`,
+		&retval,
+		&__input,
+	)
+	return &retval, err
+}
+
 func getOrganization(
 	client graphql.Client,
 	slug string,
@@ -205,6 +1244,79 @@ query getOrganization ($slug: ID!) {
 		allowedApiIpAddresses
 		id
 		uuid
+	}
+}
+`,
+		&retval,
+		&__input,
+	)
+	return &retval, err
+}
+
+func getPipeline(
+	client graphql.Client,
+	slug string,
+) (*getPipelineResponse, error) {
+	__input := __getPipelineInput{
+		Slug: slug,
+	}
+	var err error
+
+	var retval getPipelineResponse
+	err = client.MakeRequest(
+		nil,
+		"getPipeline",
+		`
+query getPipeline ($slug: ID!) {
+	pipeline(slug: $slug) {
+		allowRebuilds
+		archived
+		branchConfiguration
+		buildRetentionEnabled
+		buildRetentionNumber
+		buildRetentionPeriod
+		cancelIntermediateBuilds
+		cancelIntermediateBuildsBranchFilter
+		cluster {
+			id
+			name
+		}
+		defaultBranch
+		defaultTimeoutInMinutes
+		id
+		maximumTimeoutInMinutes
+		name
+		repository {
+			provider {
+				__typename
+				name
+				url
+			}
+			url
+		}
+		skipIntermediateBuilds
+		skipIntermediateBuildsBranchFilter
+		slug
+		steps {
+			yaml
+		}
+		tags {
+			label
+		}
+		teams(first: 50) {
+			edges {
+				node {
+					id
+					team {
+						name
+					}
+				}
+			}
+		}
+		url
+		uuid
+		visibility
+		webhookURL
 	}
 }
 `,

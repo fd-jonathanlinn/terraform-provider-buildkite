@@ -1,0 +1,102 @@
+query getPipeline($slug: ID!) {
+    pipeline(slug: $slug) {
+        allowRebuilds
+        archived
+        branchConfiguration
+        buildRetentionEnabled
+        buildRetentionNumber
+        buildRetentionPeriod
+        cancelIntermediateBuilds
+        cancelIntermediateBuildsBranchFilter
+        cluster {
+            id
+            name
+        }
+        defaultBranch
+        defaultTimeoutInMinutes
+        id
+        maximumTimeoutInMinutes
+        name
+        repository {
+            provider {
+                name
+                url
+            }
+            url
+        }
+        skipIntermediateBuilds
+        skipIntermediateBuildsBranchFilter
+        slug
+        steps {
+            yaml
+        }
+        tags {
+            label
+        }
+        teams(first: 50) {
+            edges {
+                node {
+                    id
+                    team {
+                        name
+                    }
+                }
+            }
+        }
+        url
+        uuid
+        visibility
+        webhookURL
+    }
+}
+
+mutation createPipeline(
+    $organizationId: ID!
+    $name: String!
+    $repository: String!
+    $steps: PipelineStepsInput!
+    $teams: [PipelineTeamAssignmentInput!]
+    $clusterId: ID
+    $description: String
+    $skipIntermediateBuilds: Boolean
+    $skipIntermediateBuildsBranchFilter: String
+    $cancelIntermediateBuilds: Boolean
+    $cancelIntermediateBuildsBranchFilter: String
+    $visibility: PipelineVisibility
+    $allowRebuilds: Boolean
+    $defaultTimeoutInMinutes: Int
+    $maximumTimeoutInMinutes: Int
+    $defaultBranch: String
+    $tags: [PipelineTagInput!]
+    $branchConfiguration: String
+) {
+    pipelineCreate(
+        input: {
+            organizationId: $organizationId
+            name: $name
+            repository: { url: $repository }
+            description: $description
+            steps: $steps
+            teams: $teams
+            clusterId: $clusterId
+            skipIntermediateBuilds: $skipIntermediateBuilds
+            skipIntermediateBuildsBranchFilter: $skipIntermediateBuildsBranchFilter
+            cancelIntermediateBuilds: $cancelIntermediateBuilds
+            cancelIntermediateBuildsBranchFilter: $cancelIntermediateBuildsBranchFilter
+            visibility: $visibility
+            allowRebuilds: $allowRebuilds
+            defaultTimeoutInMinutes: $defaultTimeoutInMinutes
+            maximumTimeoutInMinutes: $maximumTimeoutInMinutes
+            defaultBranch: $defaultBranch
+            tags: $tags
+            branchConfiguration: $branchConfiguration
+        }
+    ) {
+        pipeline {
+            id
+            name
+            url
+            slug
+        }
+    }
+}
