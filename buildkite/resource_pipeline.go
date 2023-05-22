@@ -16,7 +16,7 @@ const defaultSteps = `steps:
 func resourcePipeline() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: CreatePipeline,
-		ReadContext:   ReadPipeline,
+		// ReadContext:   ReadPipeline,
 		UpdateContext: CreatePipeline,
 		// DeleteContext: DeletePipeline,
 		Importer: &schema.ResourceImporter{
