@@ -11,3 +11,11 @@ context_type: "-"
 bindings:
   YAML:
     type: string
+  PipelineStepsInput:
+    type: map[string]string
+  PipnlineTeamAssignmentInput:
+    type: map[string]string
+  PipelineVisibility:
+    type: string
+  PipelineTagInput:
+    type: map[string]string

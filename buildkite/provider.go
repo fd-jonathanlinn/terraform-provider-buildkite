@@ -28,6 +28,7 @@ func Provider(version string) *schema.Provider {
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"buildkite_meta":         dataSourceMeta(),
+			"buildkite_pipeline":     dataSourcePipeline(),
 			"buildkite_team":         dataSourceTeam(),
 			"buildkite_organization": dataSourceOrganization(),
 		},

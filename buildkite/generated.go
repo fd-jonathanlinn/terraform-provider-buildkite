@@ -61,24 +61,6 @@ const (
 	PipelineAccessLevelsReadOnly PipelineAccessLevels = "READ_ONLY"
 )
 
-// Step definition for a pipeline
-type PipelineStepsInput struct {
-	// Step definition for a pipeline
-	Yaml string `json:"yaml"`
-}
-
-// GetYaml returns PipelineStepsInput.Yaml, and is useful for accessing the field via an interface.
-func (v *PipelineStepsInput) GetYaml() string { return v.Yaml }
-
-// Tag associated with a pipeline
-type PipelineTagInput struct {
-	// Tag associated with a pipeline
-	Label string `json:"label"`
-}
-
-// GetLabel returns PipelineTagInput.Label, and is useful for accessing the field via an interface.
-func (v *PipelineTagInput) GetLabel() string { return v.Label }
-
 // Used to assign teams to pipelines
 type PipelineTeamAssignmentInput struct {
 	// Used to assign teams to pipelines
@@ -93,22 +75,12 @@ func (v *PipelineTeamAssignmentInput) GetId() string { return v.Id }
 // GetAccessLevel returns PipelineTeamAssignmentInput.AccessLevel, and is useful for accessing the field via an interface.
 func (v *PipelineTeamAssignmentInput) GetAccessLevel() PipelineAccessLevels { return v.AccessLevel }
 
-// The visibility of the pipeline
-type PipelineVisibility string
-
-const (
-	// The pipeline is public
-	PipelineVisibilityPublic PipelineVisibility = "PUBLIC"
-	// The pipeline is private
-	PipelineVisibilityPrivate PipelineVisibility = "PRIVATE"
-)
-
 // __createPipelineInput is used internally by genqlient
 type __createPipelineInput struct {
 	OrganizationId                       string                        `json:"organizationId"`
 	Name                                 string                        `json:"name"`
 	Repository                           string                        `json:"repository"`
-	Steps                                PipelineStepsInput            `json:"steps"`
+	Steps                                map[string]string             `json:"steps"`
 	Teams                                []PipelineTeamAssignmentInput `json:"teams"`
 	ClusterId                            string                        `json:"clusterId"`
 	Description                          string                        `json:"description"`
@@ -116,12 +88,12 @@ type __createPipelineInput struct {
 	SkipIntermediateBuildsBranchFilter   string                        `json:"skipIntermediateBuildsBranchFilter"`
 	CancelIntermediateBuilds             bool                          `json:"cancelIntermediateBuilds"`
 	CancelIntermediateBuildsBranchFilter string                        `json:"cancelIntermediateBuildsBranchFilter"`
-	Visibility                           PipelineVisibility            `json:"visibility"`
+	Visibility                           string                        `json:"visibility"`
 	AllowRebuilds                        bool                          `json:"allowRebuilds"`
 	DefaultTimeoutInMinutes              int                           `json:"defaultTimeoutInMinutes"`
 	MaximumTimeoutInMinutes              int                           `json:"maximumTimeoutInMinutes"`
 	DefaultBranch                        string                        `json:"defaultBranch"`
-	Tags                                 []PipelineTagInput            `json:"tags"`
+	Tags                                 []map[string]string           `json:"tags"`
 	BranchConfiguration                  string                        `json:"branchConfiguration"`
 }
 
@@ -135,7 +107,7 @@ func (v *__createPipelineInput) GetName() string { return v.Name }
 func (v *__createPipelineInput) GetRepository() string { return v.Repository }
 
 // GetSteps returns __createPipelineInput.Steps, and is useful for accessing the field via an interface.
-func (v *__createPipelineInput) GetSteps() PipelineStepsInput { return v.Steps }
+func (v *__createPipelineInput) GetSteps() map[string]string { return v.Steps }
 
 // GetTeams returns __createPipelineInput.Teams, and is useful for accessing the field via an interface.
 func (v *__createPipelineInput) GetTeams() []PipelineTeamAssignmentInput { return v.Teams }
@@ -163,7 +135,7 @@ func (v *__createPipelineInput) GetCancelIntermediateBuildsBranchFilter() string
 }
 
 // GetVisibility returns __createPipelineInput.Visibility, and is useful for accessing the field via an interface.
-func (v *__createPipelineInput) GetVisibility() PipelineVisibility { return v.Visibility }
+func (v *__createPipelineInput) GetVisibility() string { return v.Visibility }
 
 // GetAllowRebuilds returns __createPipelineInput.AllowRebuilds, and is useful for accessing the field via an interface.
 func (v *__createPipelineInput) GetAllowRebuilds() bool { return v.AllowRebuilds }
@@ -178,7 +150,7 @@ func (v *__createPipelineInput) GetMaximumTimeoutInMinutes() int { return v.Maxi
 func (v *__createPipelineInput) GetDefaultBranch() string { return v.DefaultBranch }
 
 // GetTags returns __createPipelineInput.Tags, and is useful for accessing the field via an interface.
-func (v *__createPipelineInput) GetTags() []PipelineTagInput { return v.Tags }
+func (v *__createPipelineInput) GetTags() []map[string]string { return v.Tags }
 
 // GetBranchConfiguration returns __createPipelineInput.BranchConfiguration, and is useful for accessing the field via an interface.
 func (v *__createPipelineInput) GetBranchConfiguration() string { return v.BranchConfiguration }
@@ -352,7 +324,7 @@ type getPipelinePipeline struct {
 	// The UUID of the pipeline
 	Uuid string `json:"uuid"`
 	// Whether this pipeline is visible to everyone, including people outside this organization
-	Visibility PipelineVisibility `json:"visibility"`
+	Visibility string `json:"visibility"`
 	// The URL to use in your repository settings for commit webhooks
 	WebhookURL string `json:"webhookURL"`
 }
@@ -435,7 +407,7 @@ func (v *getPipelinePipeline) GetUrl() string { return v.Url }
 func (v *getPipelinePipeline) GetUuid() string { return v.Uuid }
 
 // GetVisibility returns getPipelinePipeline.Visibility, and is useful for accessing the field via an interface.
-func (v *getPipelinePipeline) GetVisibility() PipelineVisibility { return v.Visibility }
+func (v *getPipelinePipeline) GetVisibility() string { return v.Visibility }
 
 // GetWebhookURL returns getPipelinePipeline.WebhookURL, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetWebhookURL() string { return v.WebhookURL }
@@ -1165,7 +1137,7 @@ func createPipeline(
 	organizationId string,
 	name string,
 	repository string,
-	steps PipelineStepsInput,
+	steps map[string]string,
 	teams []PipelineTeamAssignmentInput,
 	clusterId string,
 	description string,
@@ -1173,12 +1145,12 @@ func createPipeline(
 	skipIntermediateBuildsBranchFilter string,
 	cancelIntermediateBuilds bool,
 	cancelIntermediateBuildsBranchFilter string,
-	visibility PipelineVisibility,
+	visibility string,
 	allowRebuilds bool,
 	defaultTimeoutInMinutes int,
 	maximumTimeoutInMinutes int,
 	defaultBranch string,
-	tags []PipelineTagInput,
+	tags []map[string]string,
 	branchConfiguration string,
 ) (*createPipelineResponse, error) {
 	__input := __createPipelineInput{

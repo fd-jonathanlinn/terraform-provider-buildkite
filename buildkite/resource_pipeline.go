@@ -16,9 +16,9 @@ const defaultSteps = `steps:
 func resourcePipeline() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: CreatePipeline,
-		// ReadContext:   ReadPipeline,
+		ReadContext:   ReadPipeline,
 		UpdateContext: CreatePipeline,
-		// DeleteContext: DeletePipeline,
+		DeleteContext: CreatePipeline,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -95,18 +95,18 @@ func resourcePipeline() *schema.Resource {
 				Type:     schema.TypeString,
 			},
 			"team": {
-				Type:       schema.TypeSet,
-				Optional:   true,
-				ConfigMode: schema.SchemaConfigModeAttr,
+				Type:     schema.TypeSet,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"slug": {
+						"id": {
 							Required: true,
 							Type:     schema.TypeString,
 						},
 						"access_level": {
-							Required: true,
+							Optional: true,
 							Type:     schema.TypeString,
+							Default:  "READ_ONLY",
 							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
 								switch v := val.(string); v {
 								case "READ_ONLY":
@@ -124,10 +124,11 @@ func resourcePipeline() *schema.Resource {
 				},
 			},
 			"tags": {
-				Type:     schema.TypeSet,
+				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Set:      schema.HashString,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 			"provider_settings": {
 				Type:     schema.TypeList,
@@ -246,6 +247,22 @@ func resourcePipeline() *schema.Resource {
 				Computed: true,
 				Type:     schema.TypeString,
 			},
+			"visibility": {
+				Optional: true,
+				Type:     schema.TypeString,
+				Default:  "PRIVATE",
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					switch v := val.(string); v {
+					case "PRIVATE":
+					case "PUBLIC":
+						return
+					default:
+						errs = append(errs, fmt.Errorf("%q must be one of PRIVATE or PUBLIC, got: %s", key, v))
+						return
+					}
+					return
+				},
+			},
 			"badge_url": {
 				Computed: true,
 				Type:     schema.TypeString,
@@ -269,25 +286,37 @@ func CreatePipeline(ctx context.Context, d *schema.ResourceData, m interface{}) 
 		return diag.FromErr(fmt.Errorf("organization not found: '%s'", client.organization))
 	}
 
+	teams := make([]PipelineTeamAssignmentInput, 0)
+
+	tags := make(map[string]string, 0)
+
+	for _, tag := range d.Get("tags").([]interface{}) {
+		tags["label"] = tag.(string)
+	}
+
+	steps := map[string]string{
+		"yaml": d.Get("steps").(string),
+	}
+
 	apiResponse, err := createPipeline(
 		client.genqlient,
 		response.Organization.Id,
 		d.Get("name").(string),
 		d.Get("repository").(string),
-		d.Get("steps").(PipelineStepsInput),
-		d.Get("teams").([]PipelineTeamAssignmentInput),
+		steps,
+		teams,
 		d.Get("cluster_id").(string),
 		d.Get("description").(string),
 		d.Get("skip_intermediate_builds").(bool),
 		d.Get("skip_intermediate_builds_branch_filter").(string),
 		d.Get("cancel_intermediate_builds").(bool),
 		d.Get("cancel_intermediate_builds_branch_filter").(string),
-		d.Get("visibility").(PipelineVisibility),
+		d.Get("visibility").(string),
 		d.Get("allow_rebuilds").(bool),
 		d.Get("default_timeout_in_minutes").(int),
 		d.Get("maximum_timeout_in_minutes").(int),
 		d.Get("default_branch").(string),
-		d.Get("tags").([]PipelineTagInput),
+		tags,
 		d.Get("branch_configuration").(string),
 	)
 
@@ -296,12 +325,38 @@ func CreatePipeline(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	}
 
 	d.SetId(apiResponse.PipelineCreate.Pipeline.Id)
+	d.Set("name", apiResponse.PipelineCreate.Pipeline.Name)
 	d.Set("slug", apiResponse.PipelineCreate.Pipeline.Slug)
 	d.Set("url", apiResponse.PipelineCreate.Pipeline.Url)
 
 	return diags
 }
 
-func ReadPipeline() {
-	fmt.Println("hello")
+func ReadPipeline(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	client := m.(*Client)
+
+	pipelineSlug := fmt.Sprintf("%s/%s", client.organization, d.Get("slug").(string))
+
+	response, err := getPipeline(client.genqlient, pipelineSlug)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if response.Pipeline.Slug == "" {
+		return diag.FromErr(fmt.Errorf("pipeline not found: '%s'", pipelineSlug))
+	}
+
+	d.SetId(response.Pipeline.Id)
+	d.Set("name", response.Pipeline.Name)
+	d.Set("slug", response.Pipeline.Slug)
+	d.Set("url", response.Pipeline.Url)
+	d.Set("repository", response.Pipeline.Repository)
+	d.Set("cluster_id", response.Pipeline.Cluster.Id)
+	d.Set("teams", response.Pipeline.Teams)
+	d.Set("webhook_url", response.Pipeline.WebhookURL)
+
+	return diags
 }

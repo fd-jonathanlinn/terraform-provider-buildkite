@@ -10,11 +10,13 @@ terraform {
 provider "buildkite" {
 }
 
-resource "buildkite_pipeline" "test_migration" {
-  name       = "Testing GQL Migration"
+resource "buildkite_pipeline" "test_genqlient" {
+  name       = "Testing Genqlient"
   repository = "https://github.com/buildkite/terraform-provider-buildkite.git"
+
+  tags = [ "terraform", "buildkite", "genqlient" ]
 }
 
 output "badge_url" {
-  value = buildkite_pipeline.test_migration.badge_url
+  value = buildkite_pipeline.test_genqlient.badge_url
 }
