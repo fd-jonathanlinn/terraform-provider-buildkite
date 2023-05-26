@@ -540,7 +540,14 @@ union AuditSubjectNode =APIAccessToken | AgentToken | AuthorizationBitbucket | A
 
 """All the possible types of subjects in an Audit Event"""
 enum AuditSubjectType {
+<<<<<<< HEAD
 	PIPELINE_SCHEDULE
+=======
+	TEAM_SUITE
+	SCM_SERVICE
+	SCM_PIPELINE_SETTINGS
+	SCM_REPOSITORY_HOST
+>>>>>>> origin/main
 	SUITE_MONITOR
 	SUITE
 	USER_EMAIL
@@ -551,6 +558,12 @@ enum AuditSubjectType {
 	CLUSTER
 	SSO_PROVIDER
 	ORGANIZATION_MEMBER
+<<<<<<< HEAD
+=======
+	AUTHORIZATION
+	PIPELINE
+	AGENT_TOKEN
+>>>>>>> origin/main
 	API_ACCESS_TOKEN
 	AUTHORIZATION
 	CLUSTER_QUEUE
@@ -559,6 +572,7 @@ enum AuditSubjectType {
 	CLUSTER_TOKEN
 	ORGANIZATION_INVITATION
 	TEAM
+<<<<<<< HEAD
 	PIPELINE
 	AGENT_TOKEN
 	TEAM_SUITE
@@ -566,6 +580,9 @@ enum AuditSubjectType {
 	SCM_PIPELINE_SETTINGS
 	SCM_REPOSITORY_HOST
 	SCM_SERVICE
+=======
+	TEAM_MEMBER
+>>>>>>> origin/main
 	TEAM_PIPELINE
 }
 

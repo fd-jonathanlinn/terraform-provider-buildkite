@@ -51,7 +51,7 @@ func resourcePipeline() *schema.Resource {
 			},
 			"default_timeout_in_minutes": {
 				Optional: true,
-				Default:  nil,
+				Default:  20,
 				Type:     schema.TypeInt,
 			},
 			"deletion_protection": {
@@ -62,7 +62,7 @@ func resourcePipeline() *schema.Resource {
 			},
 			"maximum_timeout_in_minutes": {
 				Optional: true,
-				Default:  nil,
+				Default:  60,
 				Type:     schema.TypeInt,
 			},
 			"description": {
@@ -132,8 +132,8 @@ func resourcePipeline() *schema.Resource {
 			},
 			"provider_settings": {
 				Type:     schema.TypeList,
-				Optional: true,
 				Computed: true,
+				Optional: true,
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

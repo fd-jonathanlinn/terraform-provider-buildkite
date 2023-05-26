@@ -1,51 +1,13 @@
 query getPipeline($slug: ID!) {
     pipeline(slug: $slug) {
-        allowRebuilds
-        archived
-        branchConfiguration
-        buildRetentionEnabled
-        buildRetentionNumber
-        buildRetentionPeriod
-        cancelIntermediateBuilds
-        cancelIntermediateBuildsBranchFilter
-        cluster {
-            id
-            name
-        }
-        defaultBranch
-        defaultTimeoutInMinutes
         id
-        maximumTimeoutInMinutes
+        defaultBranch
+        description
         name
         repository {
-            provider {
-                name
-                url
-            }
             url
         }
-        skipIntermediateBuilds
-        skipIntermediateBuildsBranchFilter
         slug
-        steps {
-            yaml
-        }
-        tags {
-            label
-        }
-        teams(first: 50) {
-            edges {
-                node {
-                    id
-                    team {
-                        name
-                    }
-                }
-            }
-        }
-        url
-        uuid
-        visibility
         webhookURL
     }
 }

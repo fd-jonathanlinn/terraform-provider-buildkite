@@ -280,6 +280,7 @@ func (v *getOrganizationResponse) GetOrganization() getOrganizationOrganization 
 //
 // A pipeline
 type getPipelinePipeline struct {
+<<<<<<< HEAD
 	// Whether existing builds can be rebuilt as new builds.
 	AllowRebuilds bool `json:"allowRebuilds"`
 	// Whether this pipeline has been archived
@@ -304,10 +305,18 @@ type getPipelinePipeline struct {
 	Id                      string `json:"id"`
 	// The maximum timeout in minutes for all command steps in this pipeline. Any command step without a timeout or with a timeout greater than this value will be set to this value.
 	MaximumTimeoutInMinutes int `json:"maximumTimeoutInMinutes"`
+=======
+	Id string `json:"id"`
+	// The default branch for this pipeline
+	DefaultBranch string `json:"defaultBranch"`
+	// The short description of the pipeline
+	Description string `json:"description"`
+>>>>>>> origin/main
 	// The name of the pipeline
 	Name string `json:"name"`
 	// The repository for this pipeline
 	Repository getPipelinePipelineRepository `json:"repository"`
+<<<<<<< HEAD
 	// When a new build is created on a branch, any previous builds that haven't yet started on the same branch will be automatically marked as skipped.
 	SkipIntermediateBuilds bool `json:"skipIntermediateBuilds"`
 	// Limit which branches build skipping applies to, for example `!main` will ensure that the main branch won't have it's builds automatically skipped.
@@ -325,10 +334,15 @@ type getPipelinePipeline struct {
 	Uuid string `json:"uuid"`
 	// Whether this pipeline is visible to everyone, including people outside this organization
 	Visibility string `json:"visibility"`
+=======
+	// The slug of the pipeline
+	Slug string `json:"slug"`
+>>>>>>> origin/main
 	// The URL to use in your repository settings for commit webhooks
 	WebhookURL string `json:"webhookURL"`
 }
 
+<<<<<<< HEAD
 // GetAllowRebuilds returns getPipelinePipeline.AllowRebuilds, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetAllowRebuilds() bool { return v.AllowRebuilds }
 
@@ -359,10 +373,15 @@ func (v *getPipelinePipeline) GetCancelIntermediateBuildsBranchFilter() string {
 
 // GetCluster returns getPipelinePipeline.Cluster, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetCluster() getPipelinePipelineCluster { return v.Cluster }
+=======
+// GetId returns getPipelinePipeline.Id, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetId() string { return v.Id }
+>>>>>>> origin/main
 
 // GetDefaultBranch returns getPipelinePipeline.DefaultBranch, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetDefaultBranch() string { return v.DefaultBranch }
 
+<<<<<<< HEAD
 // GetDefaultTimeoutInMinutes returns getPipelinePipeline.DefaultTimeoutInMinutes, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetDefaultTimeoutInMinutes() int { return v.DefaultTimeoutInMinutes }
 
@@ -371,6 +390,10 @@ func (v *getPipelinePipeline) GetId() string { return v.Id }
 
 // GetMaximumTimeoutInMinutes returns getPipelinePipeline.MaximumTimeoutInMinutes, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetMaximumTimeoutInMinutes() int { return v.MaximumTimeoutInMinutes }
+=======
+// GetDescription returns getPipelinePipeline.Description, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetDescription() string { return v.Description }
+>>>>>>> origin/main
 
 // GetName returns getPipelinePipeline.Name, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetName() string { return v.Name }
@@ -378,6 +401,7 @@ func (v *getPipelinePipeline) GetName() string { return v.Name }
 // GetRepository returns getPipelinePipeline.Repository, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetRepository() getPipelinePipelineRepository { return v.Repository }
 
+<<<<<<< HEAD
 // GetSkipIntermediateBuilds returns getPipelinePipeline.SkipIntermediateBuilds, and is useful for accessing the field via an interface.
 func (v *getPipelinePipeline) GetSkipIntermediateBuilds() bool { return v.SkipIntermediateBuilds }
 
@@ -424,17 +448,29 @@ func (v *getPipelinePipelineCluster) GetId() string { return v.Id }
 // GetName returns getPipelinePipelineCluster.Name, and is useful for accessing the field via an interface.
 func (v *getPipelinePipelineCluster) GetName() string { return v.Name }
 
+=======
+// GetSlug returns getPipelinePipeline.Slug, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetSlug() string { return v.Slug }
+
+// GetWebhookURL returns getPipelinePipeline.WebhookURL, and is useful for accessing the field via an interface.
+func (v *getPipelinePipeline) GetWebhookURL() string { return v.WebhookURL }
+
+>>>>>>> origin/main
 // getPipelinePipelineRepository includes the requested fields of the GraphQL type Repository.
 // The GraphQL type's documentation follows.
 //
 // A repository associated with a pipeline
 type getPipelinePipelineRepository struct {
+<<<<<<< HEAD
 	// The repository’s provider
 	Provider getPipelinePipelineRepositoryProvider `json:"-"`
+=======
+>>>>>>> origin/main
 	// The git URL for this repository
 	Url string `json:"url"`
 }
 
+<<<<<<< HEAD
 // GetProvider returns getPipelinePipelineRepository.Provider, and is useful for accessing the field via an interface.
 func (v *getPipelinePipelineRepository) GetProvider() getPipelinePipelineRepositoryProvider {
 	return v.Provider
@@ -1025,6 +1061,11 @@ func (v *getPipelinePipelineTeamsTeamPipelineConnectionEdgesTeamPipelineEdgeNode
 	return v.Name
 }
 
+=======
+// GetUrl returns getPipelinePipelineRepository.Url, and is useful for accessing the field via an interface.
+func (v *getPipelinePipelineRepository) GetUrl() string { return v.Url }
+
+>>>>>>> origin/main
 // getPipelineResponse is returned by getPipeline on success.
 type getPipelineResponse struct {
 	// Find a pipeline
@@ -1241,6 +1282,7 @@ func getPipeline(
 		`
 query getPipeline ($slug: ID!) {
 	pipeline(slug: $slug) {
+<<<<<<< HEAD
 		allowRebuilds
 		archived
 		branchConfiguration
@@ -1288,6 +1330,16 @@ query getPipeline ($slug: ID!) {
 		url
 		uuid
 		visibility
+=======
+		id
+		defaultBranch
+		description
+		name
+		repository {
+			url
+		}
+		slug
+>>>>>>> origin/main
 		webhookURL
 	}
 }
