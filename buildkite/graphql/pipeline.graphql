@@ -29,7 +29,7 @@ mutation createPipeline(
     $defaultTimeoutInMinutes: Int
     $maximumTimeoutInMinutes: Int
     $defaultBranch: String
-    $tags: [PipelineTagInput!]
+    # $tags: [PipelineTagInput!]
     $branchConfiguration: String
 ) {
     pipelineCreate(
@@ -50,7 +50,7 @@ mutation createPipeline(
             defaultTimeoutInMinutes: $defaultTimeoutInMinutes
             maximumTimeoutInMinutes: $maximumTimeoutInMinutes
             defaultBranch: $defaultBranch
-            tags: $tags
+            # tags: $tags REMOVED FOR NOW AS BROKEN
             branchConfiguration: $branchConfiguration
         }
     ) {
@@ -60,5 +60,12 @@ mutation createPipeline(
             url
             slug
         }
+    }
+}
+
+mutation deletePipeline($id: ID!) {
+    pipelineDelete(input: { id: $id }) {
+        deletedPipelineID
+        clientMutationId
     }
 }

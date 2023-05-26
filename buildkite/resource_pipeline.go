@@ -2,6 +2,7 @@ package buildkite
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -18,7 +19,7 @@ func resourcePipeline() *schema.Resource {
 		CreateContext: CreatePipeline,
 		ReadContext:   ReadPipeline,
 		UpdateContext: CreatePipeline,
-		DeleteContext: CreatePipeline,
+		DeleteContext: DeletePipeline,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -276,35 +277,32 @@ func CreatePipeline(ctx context.Context, d *schema.ResourceData, m interface{}) 
 	var diags diag.Diagnostics
 	client := m.(*Client)
 
-	response, err := getOrganization(client.genqlient, client.organization)
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if response.Organization.Id == "" {
-		return diag.FromErr(fmt.Errorf("organization not found: '%s'", client.organization))
-	}
-
-	teams := make([]PipelineTeamAssignmentInput, 0)
-
-	tags := make(map[string]string, 0)
-
-	for _, tag := range d.Get("tags").([]interface{}) {
-		tags["label"] = tag.(string)
-	}
+	fmt.Printf("Teams data: %#v", d.Get("team"))
 
 	steps := map[string]string{
 		"yaml": d.Get("steps").(string),
 	}
 
+	teams := d.Get("team").(*schema.Set).List()
+
+	pipelineTeams := make([]PipelineTeamAssignmentInput, len(teams))
+
+	for i, team := range teams {
+		teamMap := team.(map[string]interface{})
+
+		pipelineTeams[i] = PipelineTeamAssignmentInput{
+			Id:          teamMap["id"].(string),
+			AccessLevel: PipelineAccessLevels(teamMap["access_level"].(string)),
+		}
+	}
+
 	apiResponse, err := createPipeline(
 		client.genqlient,
-		response.Organization.Id,
+		client.organizationId,
 		d.Get("name").(string),
 		d.Get("repository").(string),
 		steps,
-		teams,
+		pipelineTeams,
 		d.Get("cluster_id").(string),
 		d.Get("description").(string),
 		d.Get("skip_intermediate_builds").(bool),
@@ -316,7 +314,6 @@ func CreatePipeline(ctx context.Context, d *schema.ResourceData, m interface{}) 
 		d.Get("default_timeout_in_minutes").(int),
 		d.Get("maximum_timeout_in_minutes").(int),
 		d.Get("default_branch").(string),
-		tags,
 		d.Get("branch_configuration").(string),
 	)
 
@@ -333,30 +330,50 @@ func CreatePipeline(ctx context.Context, d *schema.ResourceData, m interface{}) 
 }
 
 func ReadPipeline(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	client := m.(*Client)
 
-	pipelineSlug := fmt.Sprintf("%s/%s", client.organization, d.Get("slug").(string))
-
-	response, err := getPipeline(client.genqlient, pipelineSlug)
+	orgPipelineSlug := fmt.Sprintf("%s/%s", client.organization, d.Get("slug").(string))
+	pipeline, err := getPipeline(client.genqlient, orgPipelineSlug)
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if response.Pipeline.Slug == "" {
-		return diag.FromErr(fmt.Errorf("pipeline not found: '%s'", pipelineSlug))
+	if pipeline.Pipeline.Id == "" {
+		return diag.FromErr(errors.New("pipeline not found"))
 	}
 
-	d.SetId(response.Pipeline.Id)
-	d.Set("name", response.Pipeline.Name)
-	d.Set("slug", response.Pipeline.Slug)
-	d.Set("url", response.Pipeline.Url)
-	d.Set("repository", response.Pipeline.Repository)
-	d.Set("cluster_id", response.Pipeline.Cluster.Id)
-	d.Set("teams", response.Pipeline.Teams)
-	d.Set("webhook_url", response.Pipeline.WebhookURL)
+	d.SetId(pipeline.Pipeline.Id)
+	d.Set("default_branch", pipeline.Pipeline.DefaultBranch)
+	d.Set("description", pipeline.Pipeline.Description)
+	d.Set("name", pipeline.Pipeline.Name)
+	d.Set("repository", pipeline.Pipeline.Repository.Url)
+	d.Set("slug", pipeline.Pipeline.Slug)
+	d.Set("webhook_url", pipeline.Pipeline.WebhookURL)
+
+	return diags
+}
+
+func DeletePipeline(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	client := m.(*Client)
+
+	resp, err := getPipeline(client.genqlient, fmt.Sprintf("%s/%s", client.organization, d.Get("slug").(string)))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	pipelineId := resp.Pipeline.Id
+
+	_, err = deletePipeline(client.genqlient, pipelineId)
+
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	return diags
 }

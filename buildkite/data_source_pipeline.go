@@ -1,18 +1,45 @@
 package buildkite
 
 import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 func dataSourcePipeline() *schema.Resource {
-	resource := resourcePipeline()
 	return &schema.Resource{
-		ReadContext: resource.ReadContext,
-		Schema:      resource.Schema,
+		ReadContext: dataSourcePipelineRead,
+		Schema: map[string]*schema.Schema{
+			"default_branch": {
+				Computed: true,
+				Type:     schema.TypeString,
+			},
+			"description": {
+				Computed: true,
+				Type:     schema.TypeString,
+			},
+			"name": {
+				Computed: true,
+				Type:     schema.TypeString,
+			},
+			"repository": {
+				Computed: true,
+				Type:     schema.TypeString,
+			},
+			"slug": {
+				Required: true,
+				Type:     schema.TypeString,
+			},
+			"webhook_url": {
+				Computed: true,
+				Type:     schema.TypeString,
+			},
+		},
 	}
 }
-<<<<<<< HEAD
-=======
 
 // ReadPipeline retrieves a Buildkite pipeline
 func dataSourcePipelineRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -42,4 +69,3 @@ func dataSourcePipelineRead(ctx context.Context, d *schema.ResourceData, m inter
 
 	return diags
 }
->>>>>>> origin/main
