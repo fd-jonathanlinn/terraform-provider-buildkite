@@ -27,8 +27,8 @@ mutation createClusterQueue($input: ClusterQueueCreateInput!) {
     }
 }
 
-mutation updateClusterQueue(input: ClusterQueueUpdateInput!){
-    ClusterQueueUpdate(input: $input) {
+mutation updateClusterQueue($input: ClusterQueueUpdateInput!){
+    clusterQueueUpdate(input: $input) {
         clientMutationId
         clusterQueue {
             id
@@ -39,8 +39,8 @@ mutation updateClusterQueue(input: ClusterQueueUpdateInput!){
     }
 }
 
-mutation deleteClusterQueue(input: ClusterQueueDeleteInput!){
-    ClusterQueueDelete(input: $input) {
+mutation deleteClusterQueue($input: ClusterQueueDeleteInput!){
+    clusterQueueDelete(input: $input) {
         clientMutationId
     }
 }
