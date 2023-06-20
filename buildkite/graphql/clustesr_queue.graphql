@@ -1,0 +1,28 @@
+query getClusterQueues($orgSlug: ID!, $id: ID!) {
+    organization(slug: $orgSlug) {
+        cluster(id: $id) {
+            queues(first: 50) {
+                edges {
+                    node {
+                        id
+                        uuid
+                        key
+                        description
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation createClusterQueue($input: ClusterQueueCreateInput!) {
+    clusterQueueCreate(input: $input) {
+        clientMutationId
+        clusterQueue {
+            id
+            uuid
+            key
+            description
+        }
+    }
+}
