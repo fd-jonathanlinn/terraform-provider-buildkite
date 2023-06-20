@@ -26,3 +26,21 @@ mutation createClusterQueue($input: ClusterQueueCreateInput!) {
         }
     }
 }
+
+mutation updateClusterQueue(input: ClusterQueueUpdateInput!){
+    ClusterQueueUpdate(input: $input) {
+        clientMutationId
+        clusterQueue {
+            id
+            uuid
+            key
+            description
+        }
+    }
+}
+
+mutation deleteClusterQueue(input: ClusterQueueDeleteInput!){
+    ClusterQueueDelete(input: $input) {
+        clientMutationId
+    }
+}
