@@ -42,5 +42,6 @@ mutation updateClusterQueue($input: ClusterQueueUpdateInput!){
 mutation deleteClusterQueue($input: ClusterQueueDeleteInput!){
     clusterQueueDelete(input: $input) {
         clientMutationId
+        deletedClusterQueueId
     }
 }
