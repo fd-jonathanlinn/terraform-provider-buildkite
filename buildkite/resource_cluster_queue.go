@@ -19,15 +19,15 @@ type ClusterQueueStateModel struct {
 	Description    types.String `tfsdk:"description"`
 }
 
-type CluseterQueueResource struct {
+type ClusterQueueResource struct {
 	client *Client
 }
 
 func NewClusterQueueResource() resource.Resource {
-	return &CluseterQueueResource{}
+	return &ClusterQueueResource{}
 }
 
-func (CluseterQueueResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (ClusterQueueResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = resource_schema.Schema{
 		MarkdownDescription: "A Cluster Queue is a queue belonging to a specific Cluster for its Agents to target builds on. ",
 		Attributes: map[string]resource_schema.Attribute{
@@ -58,21 +58,21 @@ func (CluseterQueueResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 }
 
-func (CluseterQueueResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (ClusterQueueResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = "buildkite_cluster_queue"
 }
 
-func (cq *CluseterQueueResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (cq *ClusterQueueResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
 	cq.client = req.ProviderData.(*Client)
 }
 
-func (cq *CluseterQueueResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (cq *ClusterQueueResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan, state ClusterQueueStateModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	
+	 
 	apiResponse, err := createClusterQueue(
 		cq.client.genqlient,
 		cq.client.organizationId,
@@ -95,11 +95,11 @@ func (cq *CluseterQueueResource) Create(ctx context.Context, req resource.Create
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (cq *CluseterQueueResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (cq *ClusterQueueResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// To implement
 }
 
-func (cq *CluseterQueueResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (cq *ClusterQueueResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var state ClusterQueueStateModel
 	var description string
 
@@ -123,7 +123,7 @@ func (cq *CluseterQueueResource) Update(ctx context.Context, req resource.Update
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (cq *CluseterQueueResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (cq *ClusterQueueResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var plan ClusterQueueStateModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &plan)...)
 
