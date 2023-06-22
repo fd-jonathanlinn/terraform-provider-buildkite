@@ -72,7 +72,7 @@ func (cq *ClusterQueueResource) Configure(ctx context.Context, req resource.Conf
 func (cq *ClusterQueueResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan, state ClusterQueueStateModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	 
+
 	apiResponse, err := createClusterQueue(
 		cq.client.genqlient,
 		cq.client.organizationId,
@@ -119,7 +119,7 @@ func (cq *ClusterQueueResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	state.Description = types.StringPointerValue(&apiResponse.ClusterQueueUpdate.ClusterQueue.Description)
-	
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
