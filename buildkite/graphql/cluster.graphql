@@ -1,0 +1,85 @@
+query getCluster($orgSlug: ID!, $id: ID!) {
+    organization(slug: $orgSlug) {
+        cluster(id: $id) {
+            name
+            id
+            uuid
+            description
+            defaultQueue {
+                key
+                id
+                dispatchPaused
+                dispatchPausedBy {
+                    name
+                    id
+                }
+                description
+                createdBy {
+                    name
+                    id
+                }
+            }
+            agentTokens {
+                edges {
+                    node {
+                        createdBy {
+                            name
+                            id
+                        }
+                        id
+                        description
+                        jobTokensEnabled
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation createCluster($organizationId: ID!, $name: String!, $description: String, $emoji: String, $color: String) {
+    clusterCreate(
+        input: { organizationId: $organizationId, name: $name, description: $description, emoji: $emoji, color: $color }
+    ) {
+        clientMutationId
+        cluster {
+            id
+            uuid
+        }
+    }
+}
+
+mutation updateCluster(
+    $organizationId: ID!
+    $id: ID!
+    $name: String
+    $description: String
+    $emoji: String
+    $color: String
+) {
+    clusterUpdate(
+        input: {
+            organizationId: $organizationId
+            id: $id
+            name: $name
+            description: $description
+            emoji: $emoji
+            color: $color
+        }
+    ) {
+        clientMutationId
+        cluster {
+            id
+            uuid
+            name
+            description
+            emoji
+            color
+        }
+    }
+}
+
+mutation deleteCluster($organizationId: ID!, $id: ID!) {
+    clusterDelete(input: { organizationId: $organizationId, id: $id }) {
+        clientMutationId
+    }
+}
