@@ -15,9 +15,21 @@ query getClusterQueues($orgSlug: ID!, $id: ID!) {
     }
 }
 
-mutation createClusterQueue($input: ClusterQueueCreateInput!) {
-    clusterQueueCreate(input: $input) {
-        clientMutationId
+mutation createClusterQueue(
+    $organizationId: ID!, 
+    $clusterId: ID!,
+    $key: String!,
+    # @genqlient(pointer: true)
+    $description: String
+) {
+    clusterQueueCreate(
+        input: {
+            organizationId: $organizationId
+            clusterId: $clusterId,
+            key: $key
+            description: $description
+        }
+    ) {
         clusterQueue {
             id
             uuid
@@ -27,9 +39,19 @@ mutation createClusterQueue($input: ClusterQueueCreateInput!) {
     }
 }
 
-mutation updateClusterQueue($input: ClusterQueueUpdateInput!){
-    clusterQueueUpdate(input: $input) {
-        clientMutationId
+mutation updateClusterQueue(
+    $organizationId: ID!, 
+    $id: ID!,
+    # @genqlient(pointer: true)
+    $description: String
+) {
+    clusterQueueUpdate(
+        input: {
+            organizationId: $organizationId
+            id: $id
+            description: $description
+        }
+    ) {
         clusterQueue {
             id
             uuid
@@ -39,9 +61,16 @@ mutation updateClusterQueue($input: ClusterQueueUpdateInput!){
     }
 }
 
-mutation deleteClusterQueue($input: ClusterQueueDeleteInput!){
-    clusterQueueDelete(input: $input) {
+mutation deleteClusterQueue(
+    $organizationId: ID!, 
+    $id: ID!,
+){
+    clusterQueueDelete(
+        input: {
+            organizationId: $organizationId
+            id: $id
+        }
+    ) {
         clientMutationId
-        deletedClusterQueueId
     }
 }
