@@ -2,7 +2,7 @@ package buildkite
 
 import (
 	"context"
-	//"fmt"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -13,7 +13,6 @@ import (
 type ClusterQueueStateModel struct {
 	Id             types.String `tfsdk:"id"`
 	Uuid           types.String `tfsdk:"uuid"`
-	OrganizationId types.String `tfsdk:"organization_id"`
 	ClusterId      types.String `tfsdk:"cluster_id"`
 	Key            types.String `tfsdk:"key"`
 	Description    types.String `tfsdk:"description"`
@@ -37,10 +36,6 @@ func (ClusterQueueResource) Schema(ctx context.Context, req resource.SchemaReque
 			"uuid": resource_schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The public UUID of the Cluster Queue.",
-			},
-			"organization_id": resource_schema.StringAttribute{
-				Required:            true,
-				MarkdownDescription: "The ID of the Organization that the Cluster belongs to.",
 			},
 			"cluster_id": resource_schema.StringAttribute{
 				Required:            true,
@@ -82,12 +77,15 @@ func (cq *ClusterQueueResource) Create(ctx context.Context, req resource.CreateR
 	)
 
 	if err != nil {
-		resp.Diagnostics.AddError(err.Error(), err.Error())
+		resp.Diagnostics.AddError(
+			"Unable to create Cluster Queue",
+			fmt.Sprintf("Unable to create Cluster Queue: %s", err.Error()),
+		)
+		return
 	}
 
 	state.Id = types.StringValue(apiResponse.ClusterQueueCreate.ClusterQueue.Id)
 	state.Uuid = types.StringValue(apiResponse.ClusterQueueCreate.ClusterQueue.Uuid)
-	state.OrganizationId = types.StringValue(cq.client.organizationId)
 	state.ClusterId = plan.ClusterId
 	state.Key = types.StringValue(apiResponse.ClusterQueueCreate.ClusterQueue.Key)
 	state.Description = types.StringPointerValue(&apiResponse.ClusterQueueCreate.ClusterQueue.Description)
@@ -115,7 +113,11 @@ func (cq *ClusterQueueResource) Update(ctx context.Context, req resource.UpdateR
 	)
 
 	if err != nil {
-		resp.Diagnostics.AddError(err.Error(), err.Error())
+		resp.Diagnostics.AddError(
+			"Unable to update Cluster Queue",
+			fmt.Sprintf("Unable to update Cluster Queue: %s", err.Error()),
+		)
+		return
 	}
 
 	state.Description = types.StringPointerValue(&apiResponse.ClusterQueueUpdate.ClusterQueue.Description)
@@ -134,6 +136,10 @@ func (cq *ClusterQueueResource) Delete(ctx context.Context, req resource.DeleteR
 	)
 
 	if err != nil {
-		resp.Diagnostics.AddError(err.Error(), err.Error())
+		resp.Diagnostics.AddError(
+			"Unable to create Cluster Queue",
+			fmt.Sprintf("Unable to delete Cluster Queue: %s", err.Error()),
+		)
+		return
 	}
 }
