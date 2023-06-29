@@ -1,13 +1,21 @@
+fragment ClusterQueueValues on ClusterQueue {
+    id
+    uuid
+    key
+    description             
+    cluster {
+        id
+        uuid
+    }
+}
+
 query getClusterQueues($orgSlug: ID!, $id: ID!) {
     organization(slug: $orgSlug) {
         cluster(id: $id) {
             queues(first: 50) {
                 edges {
                     node {
-                        id
-                        uuid
-                        key
-                        description
+                        ...ClusterQueueValues
                     }
                 }
             }
@@ -31,10 +39,7 @@ mutation createClusterQueue(
         }
     ) {
         clusterQueue {
-            id
-            uuid
-            key
-            description
+            ...ClusterQueueValues
         }
     }
 }
@@ -53,10 +58,7 @@ mutation updateClusterQueue(
         }
     ) {
         clusterQueue {
-            id
-            uuid
-            key
-            description
+            ...ClusterQueueValues
         }
     }
 }
