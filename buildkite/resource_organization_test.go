@@ -36,7 +36,6 @@ func TestAccOrganizationSettings_create(t *testing.T) {
 	})
 }
 
-
 func TestAccOrganizationSettings_update(t *testing.T) {
 	var o OrganizationResourceModel
 
