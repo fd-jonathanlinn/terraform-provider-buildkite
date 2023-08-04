@@ -357,7 +357,7 @@ func TestAccPipeline_import(t *testing.T) {
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Quick check to confirm the local state is correct before we re-import it
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s",resName)),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 				),
 			},
 			{
