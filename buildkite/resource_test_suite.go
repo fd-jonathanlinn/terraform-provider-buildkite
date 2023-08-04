@@ -169,6 +169,9 @@ func (ts *testSuiteResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			"team_owner_id": schema.StringAttribute{
 				Required: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"slug": schema.StringAttribute{
 				Computed: true,
