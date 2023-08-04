@@ -3,6 +3,7 @@ package buildkite
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -118,6 +119,7 @@ func (c *clusterResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
+	log.Printf("Reading cluster with ID %s ...", state.ID.ValueString())
 	r, err := getCluster(c.client.genqlient, c.client.organization, state.UUID.ValueString())
 
 	if err != nil {

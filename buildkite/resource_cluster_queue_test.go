@@ -5,13 +5,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func testAccClusterQueueConfigBasic(name string) string {
 	config := `
-	
+
 	resource "buildkite_cluster_queue" "foobar" {
 		cluster_id = "Q2x1c3Rlci0tLTFkNmIxOTg5LTJmYjctNDRlMC04MWYyLTAxYjIxNzQ4MTVkMg=="
 		description = "Acceptance Test %s"
@@ -24,6 +25,7 @@ func testAccClusterQueueConfigBasic(name string) string {
 
 // Confirm that we can create a new cluster queue, and then delete it without error
 func TestAccClusterQueue_add_remove(t *testing.T) {
+	resName := acctest.RandString(12)
 	var cq ClusterQueueResourceModel
 
 	resource.Test(t, resource.TestCase{
@@ -32,15 +34,15 @@ func TestAccClusterQueue_add_remove(t *testing.T) {
 		CheckDestroy:             testAccCheckClusterQueueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClusterQueueConfigBasic("foo"),
+				Config: testAccClusterQueueConfigBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the cluster queue exists in the buildkite API
 					testAccCheckClusterQueueExists("buildkite_cluster_queue.foobar", &cq),
 					// Confirm the cluster queue has the correct values in Buildkite's system
-					testAccCheckClusterQueueRemoteValues(&cq, "Acceptance Test foo", "foobar"),
+					testAccCheckClusterQueueRemoteValues(&cq, fmt.Sprintf("Acceptance Test %s", resName), "foobar"),
 					// Confirm the cluster queue has the correct values in terraform state
 					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "key", "foobar"),
-					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", "Acceptance Test foo"),
+					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", fmt.Sprintf("Acceptance Test %s", resName)),
 					resource.TestCheckResourceAttrSet("buildkite_cluster_queue.foobar", "id"),
 					resource.TestCheckResourceAttrSet("buildkite_cluster_queue.foobar", "uuid"),
 				),
@@ -58,6 +60,8 @@ func TestAccClusterQueue_add_remove(t *testing.T) {
 }
 
 func TestAccClusterQueue_update(t *testing.T) {
+	resName := acctest.RandString(12)
+	resNameNew := acctest.RandString(12)
 	var cq ClusterQueueResourceModel
 
 	resource.Test(t, resource.TestCase{
@@ -66,25 +70,25 @@ func TestAccClusterQueue_update(t *testing.T) {
 		CheckDestroy:             testAccCheckClusterQueueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClusterQueueConfigBasic("foo"),
+				Config: testAccClusterQueueConfigBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the cluster queue exists in the buildkite API
 					testAccCheckClusterQueueExists("buildkite_cluster_queue.foobar", &cq),
 					// Confirm the cluster queue has the correct values in Buildkite's system
-					testAccCheckClusterQueueRemoteValues(&cq, "Acceptance Test foo", "foobar"),
+					testAccCheckClusterQueueRemoteValues(&cq, fmt.Sprintf("Acceptance Test %s", resName), "foobar"),
 					// Confirm the cluster queue has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", "Acceptance Test foo"),
+					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", fmt.Sprintf("Acceptance Test %s", resName)),
 				),
 			},
 			{
-				Config: testAccClusterQueueConfigBasic("bar"),
+				Config: testAccClusterQueueConfigBasic(resNameNew),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the cluster queue exists in the buildkite API
 					testAccCheckClusterQueueExists("buildkite_cluster_queue.foobar", &cq),
 					// Confirm the cluster queue has the correct values in Buildkite's system
-					testAccCheckClusterQueueRemoteValues(&cq, "Acceptance Test bar", "foobar"),
+					testAccCheckClusterQueueRemoteValues(&cq, fmt.Sprintf("Acceptance Test %s", resNameNew), "foobar"),
 					// Confirm the cluster queue has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", "Acceptance Test bar"),
+					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", fmt.Sprintf("Acceptance Test %s", resNameNew)),
 				),
 			},
 		},
@@ -92,6 +96,7 @@ func TestAccClusterQueue_update(t *testing.T) {
 }
 
 func TestAccClusterQueue_import(t *testing.T) {
+	resName := acctest.RandString(12)
 	var cq ClusterQueueResourceModel
 
 	resource.Test(t, resource.TestCase{
@@ -100,13 +105,13 @@ func TestAccClusterQueue_import(t *testing.T) {
 		CheckDestroy:             testAccCheckClusterQueueDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClusterQueueConfigBasic("foo"),
+				Config: testAccClusterQueueConfigBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the cluster queue exists in the buildkite API
 					testAccCheckClusterQueueExists("buildkite_cluster_queue.foobar", &cq),
 					// Check to confirm the local state is correct before we re-import it
 					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "key", "foobar"),
-					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", "Acceptance Test foo"),
+					resource.TestCheckResourceAttr("buildkite_cluster_queue.foobar", "description", fmt.Sprintf("Acceptance Test %s", resName)),
 				),
 			},
 			{

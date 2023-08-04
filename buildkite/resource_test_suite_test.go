@@ -6,11 +6,32 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
+func testAccTestSuiteConfig(teamName, suiteName string) string {
+	config := `
+	resource "buildkite_team" "team" {
+		name = "%s"
+		default_team = false
+		privacy = "VISIBLE"
+		default_member_role = "MAINTAINER"
+	}
+	resource "buildkite_test_suite" "suite" {
+		name = "%s"
+		default_branch = "main"
+		team_owner_id = resource.buildkite_team.team.id
+	}
+	`
+
+	return fmt.Sprintf(config, teamName, suiteName)
+}
+
 func TestAcc_testSuiteAddRemove(t *testing.T) {
+	teamName := acctest.RandString(12)
+	suiteName := acctest.RandString(12)
 	t.Parallel()
 	var suite getTestSuiteSuite
 
@@ -20,27 +41,15 @@ func TestAcc_testSuiteAddRemove(t *testing.T) {
 		CheckDestroy:             testTestSuiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "buildkite_team" "team" {
-					name = "test suite team"
-					default_team = false
-					privacy = "VISIBLE"
-					default_member_role = "MAINTAINER"
-				}
-				resource "buildkite_test_suite" "suite" {
-					name = "test suite"
-					default_branch = "main"
-					team_owner_id = resource.buildkite_team.team.id
-				}
-				`,
+				Config: testAccTestSuiteConfig(teamName, suiteName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkTestSuiteExists("buildkite_test_suite.suite", &suite),
-					checkTestSuiteRemoteValue(&suite, "Name", "test suite"),
+					checkTestSuiteRemoteValue(&suite, "Name", teamName),
 					checkTestSuiteRemoteValue(&suite, "DefaultBranch", "main"),
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "id"),
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "api_token"),
 					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "default_branch", "main"),
-					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "name", "test suite"),
+					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "name", suiteName),
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "team_owner_id"),
 				),
 			},
@@ -49,6 +58,9 @@ func TestAcc_testSuiteAddRemove(t *testing.T) {
 }
 
 func TestAcc_testSuiteUpdate(t *testing.T) {
+	teamName := acctest.RandString(12)
+	suiteName := acctest.RandString(12)
+	newSuiteName := acctest.RandString(12)
 	t.Parallel()
 	var suite getTestSuiteSuite
 
@@ -58,53 +70,29 @@ func TestAcc_testSuiteUpdate(t *testing.T) {
 		CheckDestroy:             testTestSuiteDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: `
-				resource "buildkite_team" "team" {
-					name = "test suite team update"
-					default_team = false
-					privacy = "VISIBLE"
-					default_member_role = "MAINTAINER"
-				}
-				resource "buildkite_test_suite" "suite" {
-					name = "test suite update"
-					default_branch = "main"
-					team_owner_id = resource.buildkite_team.team.id
-				}
-				`,
+				Config: testAccTestSuiteConfig(teamName, suiteName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "id"),
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "api_token"),
 					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "default_branch", "main"),
-					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "name", "test suite update"),
+					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "name", suiteName),
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "team_owner_id"),
 					checkTestSuiteExists("buildkite_test_suite.suite", &suite),
-					checkTestSuiteRemoteValue(&suite, "Name", "test suite update"),
+					checkTestSuiteRemoteValue(&suite, "Name", suiteName),
 					checkTestSuiteRemoteValue(&suite, "DefaultBranch", "main"),
 				),
 			},
 			{
-				Config: `
-				resource "buildkite_team" "team" {
-					name = "test suite team update"
-					default_team = false
-					privacy = "VISIBLE"
-					default_member_role = "MAINTAINER"
-				}
-				resource "buildkite_test_suite" "suite" {
-					name = "test suite update"
-					default_branch = "main"
-					team_owner_id = resource.buildkite_team.team.id
-				}
-				`,
-				Taint: []string{"buildkite_team.team"},
+				Config: testAccTestSuiteConfig(teamName, newSuiteName),
+				Taint:  []string{"buildkite_team.team"},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "id"),
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "api_token"),
 					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "default_branch", "main"),
-					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "name", "test suite update"),
+					resource.TestCheckResourceAttr("buildkite_test_suite.suite", "name", newSuiteName),
 					resource.TestCheckResourceAttrSet("buildkite_test_suite.suite", "team_owner_id"),
 					checkTestSuiteExists("buildkite_test_suite.suite", &suite),
-					checkTestSuiteRemoteValue(&suite, "Name", "test suite update"),
+					checkTestSuiteRemoteValue(&suite, "Name", newSuiteName),
 					checkTestSuiteRemoteValue(&suite, "DefaultBranch", "main"),
 				),
 			},

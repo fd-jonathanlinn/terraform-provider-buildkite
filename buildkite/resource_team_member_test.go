@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 // Confirm we can add and remove a team member
 func TestAccTeamMember_add_remove(t *testing.T) {
+	resName := acctest.RandString(12)
 	var tm teamMemberResourceModel
 
 	resource.Test(t, resource.TestCase{
@@ -18,7 +20,7 @@ func TestAccTeamMember_add_remove(t *testing.T) {
 		CheckDestroy:             testCheckTeamMemberResourceRemoved,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamMemberConfigBasic("MEMBER"),
+				Config: testAccTeamMemberConfigBasic(resName, "MEMBER"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the team member exists in the buildkite API
 					testAccCheckTeamMemberExists("buildkite_team_member.test", &tm),
@@ -33,6 +35,7 @@ func TestAccTeamMember_add_remove(t *testing.T) {
 }
 
 func TestAccTeamMember_add_remove_non_default_role(t *testing.T) {
+	resName := acctest.RandString(12)
 	var tm teamMemberResourceModel
 
 	resource.Test(t, resource.TestCase{
@@ -41,7 +44,7 @@ func TestAccTeamMember_add_remove_non_default_role(t *testing.T) {
 		CheckDestroy:             testCheckTeamMemberResourceRemoved,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamMemberConfigBasic("MAINTAINER"),
+				Config: testAccTeamMemberConfigBasic(resName, "MAINTAINER"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the team member exists in the buildkite API
 					testAccCheckTeamMemberExists("buildkite_team_member.test", &tm),
@@ -56,6 +59,7 @@ func TestAccTeamMember_add_remove_non_default_role(t *testing.T) {
 }
 
 func TestAccTeamMember_update(t *testing.T) {
+	resName := acctest.RandString(12)
 	var tm teamMemberResourceModel
 
 	resource.Test(t, resource.TestCase{
@@ -64,7 +68,7 @@ func TestAccTeamMember_update(t *testing.T) {
 		CheckDestroy:             testCheckTeamMemberResourceRemoved,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamMemberConfigBasic("MEMBER"),
+				Config: testAccTeamMemberConfigBasic(resName, "MEMBER"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the team member exists in the buildkite API
 					testAccCheckTeamMemberExists("buildkite_team_member.test", &tm),
@@ -73,7 +77,7 @@ func TestAccTeamMember_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccTeamMemberConfigBasic("MAINTAINER"),
+				Config: testAccTeamMemberConfigBasic(resName, "MAINTAINER"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the team member exists in the buildkite API
 					testAccCheckTeamMemberExists("buildkite_team_member.test", &tm),
@@ -87,6 +91,7 @@ func TestAccTeamMember_update(t *testing.T) {
 
 // Confirm that this resource can be imported
 func TestAccTeamMember_import(t *testing.T) {
+	resName := acctest.RandString(12)
 	var tm teamMemberResourceModel
 
 	resource.Test(t, resource.TestCase{
@@ -95,7 +100,7 @@ func TestAccTeamMember_import(t *testing.T) {
 		CheckDestroy:             testCheckTeamMemberResourceRemoved,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTeamMemberConfigBasic("MEMBER"),
+				Config: testAccTeamMemberConfigBasic(resName, "MEMBER"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the team member exists in the buildkite API
 					testAccCheckTeamMemberExists("buildkite_team_member.test", &tm),
@@ -113,10 +118,10 @@ func TestAccTeamMember_import(t *testing.T) {
 	})
 }
 
-func testAccTeamMemberConfigBasic(role string) string {
+func testAccTeamMemberConfigBasic(name, role string) string {
 	config := `
 		resource "buildkite_team" "test" {
-			name = "acceptance testing"
+			name = "acceptance %s"
 			description = "a cool team for testing"
 			privacy = "VISIBLE"
 			default_team = true
@@ -129,7 +134,7 @@ func testAccTeamMemberConfigBasic(role string) string {
 			user_id = "VXNlci0tLThkYjI5MjBlLTNjNjAtNDhhNy1hM2Y4LTI1ODRiZTM3NGJhYw=="
 		}
 	`
-	return fmt.Sprintf(config, role)
+	return fmt.Sprintf(config, name, role)
 }
 
 func testAccCheckTeamMemberExists(resourceName string, tm *teamMemberResourceModel) resource.TestCheckFunc {

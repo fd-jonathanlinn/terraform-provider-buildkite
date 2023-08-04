@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
@@ -20,6 +21,7 @@ func testAccClusterAgentTokenBasic(description string) string {
 }
 
 func TestAccClusterAgentToken_add_remove(t *testing.T) {
+	resName := acctest.RandString(12)
 	t.Parallel()
 	var ct ClusterAgentTokenResourceModel
 
@@ -29,14 +31,14 @@ func TestAccClusterAgentToken_add_remove(t *testing.T) {
 		CheckDestroy:             testAccCheckClusterAgentTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClusterAgentTokenBasic("foo"),
+				Config: testAccClusterAgentTokenBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the token exists in the buildkite API
 					testAccCheckClusterAgentTokenExists("buildkite_cluster_agent_token.foobar", &ct),
 					// Confirm the token has the correct values in Buildkite's system
-					testAccCheckClusterAgentTokenRemoteValues(&ct, "Acceptance Test foo"),
+					testAccCheckClusterAgentTokenRemoteValues(&ct, fmt.Sprintf("Acceptance Test %s", resName)),
 					// Confirm the token has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", "Acceptance Test foo"),
+					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", fmt.Sprintf("Acceptance Test %s", resName)),
 				),
 			},
 			{
@@ -44,7 +46,7 @@ func TestAccClusterAgentToken_add_remove(t *testing.T) {
 				PlanOnly:     true,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the token has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", "Acceptance Test foo"),
+					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", fmt.Sprintf("Acceptance Test %s", resName)),
 				),
 			},
 		},
@@ -52,6 +54,8 @@ func TestAccClusterAgentToken_add_remove(t *testing.T) {
 }
 
 func TestAccClusterAgentToken_update(t *testing.T) {
+	resName := acctest.RandString(12)
+	resNameNew := acctest.RandString(12)
 	t.Parallel()
 	var ct ClusterAgentTokenResourceModel
 
@@ -61,25 +65,25 @@ func TestAccClusterAgentToken_update(t *testing.T) {
 		CheckDestroy:             testAccCheckClusterAgentTokenDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccClusterAgentTokenBasic("foo"),
+				Config: testAccClusterAgentTokenBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the token exists in the buildkite API
 					testAccCheckClusterAgentTokenExists("buildkite_cluster_agent_token.foobar", &ct),
 					// Confirm the token has the correct values in Buildkite's system
-					testAccCheckClusterAgentTokenRemoteValues(&ct, "Acceptance Test foo"),
+					testAccCheckClusterAgentTokenRemoteValues(&ct, fmt.Sprintf("Acceptance Test %s", resName)),
 					// Confirm the token has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", "Acceptance Test foo"),
+					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", fmt.Sprintf("Acceptance Test %s", resName)),
 				),
 			},
 			{
-				Config: testAccClusterAgentTokenBasic("bar"),
+				Config: testAccClusterAgentTokenBasic(resNameNew),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the token exists in the buildkite API
 					testAccCheckClusterAgentTokenExists("buildkite_cluster_agent_token.foobar", &ct),
 					// Confirm the token has the correct values in Buildkite's system
-					testAccCheckClusterAgentTokenRemoteValues(&ct, "Acceptance Test bar"),
+					testAccCheckClusterAgentTokenRemoteValues(&ct, fmt.Sprintf("Acceptance Test %s", resNameNew)),
 					// Confirm the token has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", "Acceptance Test bar"),
+					resource.TestCheckResourceAttr("buildkite_cluster_agent_token.foobar", "description", fmt.Sprintf("Acceptance Test %s", resNameNew)),
 				),
 			},
 		},

@@ -7,12 +7,14 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 // Confirm that we can create a new pipeline, and then delete it without error
 func TestAccPipeline_add_remove(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -21,14 +23,14 @@ func TestAccPipeline_add_remove(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasic("foo"),
+				Config: testAccPipelineConfigBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline foo"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 				),
 			},
 		},
@@ -37,6 +39,8 @@ func TestAccPipeline_add_remove(t *testing.T) {
 
 // Confirm that we can create a new pipeline with a cluster, and then delete it without error
 func TestAccPipeline_add_delete_withcluster(t *testing.T) {
+	resName := acctest.RandString(12)
+	resNameNew := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -45,27 +49,27 @@ func TestAccPipeline_add_delete_withcluster(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasicWithCluster("foo"),
+				Config: testAccPipelineConfigBasicWithCluster(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline foo"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "cluster_id", "Q2x1c3Rlci0tLTFkNmIxOTg5LTJmYjctNDRlMC04MWYyLTAxYjIxNzQ4MTVkMg=="),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "allow_rebuilds", "true"),
 				),
 			},
 			{
-				Config: testAccPipelineConfigBasicWithCluster("bar"),
+				Config: testAccPipelineConfigBasicWithCluster(resNameNew),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline bar"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resNameNew)),
 					// Confirm the pipeline has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline bar"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resNameNew)),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "cluster_id", "Q2x1c3Rlci0tLTFkNmIxOTg5LTJmYjctNDRlMC04MWYyLTAxYjIxNzQ4MTVkMg=="),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "allow_rebuilds", "true"),
 				),
@@ -76,6 +80,7 @@ func TestAccPipeline_add_delete_withcluster(t *testing.T) {
 
 // Confirm that we can create a new pipeline with a cluster, and then remove it from the cluster
 func TestAccPipeline_add_remove_withcluster(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -84,27 +89,27 @@ func TestAccPipeline_add_remove_withcluster(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasicWithCluster("foo"),
+				Config: testAccPipelineConfigBasicWithCluster(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline foo"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "cluster_id", "Q2x1c3Rlci0tLTFkNmIxOTg5LTJmYjctNDRlMC04MWYyLTAxYjIxNzQ4MTVkMg=="),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "allow_rebuilds", "true"),
 				),
 			},
 			{
-				Config: testAccPipelineConfigBasicWithTeam("foo"),
+				Config: testAccPipelineConfigBasicWithTeam(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline foo"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "cluster_id", ""),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "allow_rebuilds", "true"),
 				),
@@ -114,6 +119,7 @@ func TestAccPipeline_add_remove_withcluster(t *testing.T) {
 }
 
 func TestAccPipeline_add_remove_complex(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 	steps := `"steps:\n- command: buildkite-agent pipeline upload\n"`
 
@@ -123,14 +129,14 @@ func TestAccPipeline_add_remove_complex(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigComplex("bar", steps),
+				Config: testAccPipelineConfigComplex(resName, steps),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline bar"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline bar"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "repository", "https://github.com/buildkite/terraform-provider-buildkite.git"),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "steps", "steps:\n- command: buildkite-agent pipeline upload\n"),
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "default_branch", "main"),
@@ -170,6 +176,7 @@ func TestAccPipeline_add_remove_complex(t *testing.T) {
 }
 
 func TestAccPipeline_add_remove_withteams(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -178,14 +185,14 @@ func TestAccPipeline_add_remove_withteams(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasicWithTeam("foo"),
+				Config: testAccPipelineConfigBasicWithTeam(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline foo"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 				),
 			},
 		},
@@ -193,6 +200,7 @@ func TestAccPipeline_add_remove_withteams(t *testing.T) {
 }
 
 func TestAccPipeline_add_remove_withtimeouts(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -201,12 +209,12 @@ func TestAccPipeline_add_remove_withtimeouts(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasicWithTimeouts("foo"),
+				Config: testAccPipelineConfigBasicWithTimeouts(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline foo"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "maximum_timeout_in_minutes", "20"),
 				),
@@ -216,6 +224,7 @@ func TestAccPipeline_add_remove_withtimeouts(t *testing.T) {
 }
 
 func TestAccPipeline_add_remove_withdefaultsteps(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -224,12 +233,12 @@ func TestAccPipeline_add_remove_withdefaultsteps(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasicWithNoSteps("foo"),
+				Config: testAccPipelineConfigBasicWithNoSteps(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline foo"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in Buildkite's system
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "steps", "steps:\n- label: ':pipeline: Pipeline Upload'\n  command: buildkite-agent pipeline upload"),
 				),
@@ -239,6 +248,7 @@ func TestAccPipeline_add_remove_withdefaultsteps(t *testing.T) {
 }
 
 func TestAccPipeline_add_remove_withdefinedsteps(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 	steps := `"steps:\n- command: echo 'Hello from the Buildkite Terraform Provider!'\n"`
 
@@ -248,12 +258,12 @@ func TestAccPipeline_add_remove_withdefinedsteps(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasicWithSteps("bar", steps),
+				Config: testAccPipelineConfigBasicWithSteps(resName, steps),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the correct values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline bar"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resName)),
 					// Confirm the pipeline has the correct values in terraform state
 					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "steps", "steps:\n- command: echo 'Hello from the Buildkite Terraform Provider!'\n"),
 				),
@@ -264,6 +274,8 @@ func TestAccPipeline_add_remove_withdefinedsteps(t *testing.T) {
 
 // Confirm that we can create a new pipeline, and then update the description
 func TestAccPipeline_update(t *testing.T) {
+	resName := acctest.RandString(12)
+	resNameNew := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -272,23 +284,23 @@ func TestAccPipeline_update(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasic("foo"),
+				Config: testAccPipelineConfigBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Quick check to confirm the local state is correct before we update it
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 				),
 			},
 			{
-				Config: testAccPipelineConfigBasic("bar"),
+				Config: testAccPipelineConfigBasic(resNameNew),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the updated values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline bar"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resNameNew)),
 					// Confirm the pipeline has the updated values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline bar"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resNameNew)),
 				),
 			},
 		},
@@ -296,6 +308,8 @@ func TestAccPipeline_update(t *testing.T) {
 }
 
 func TestAccPipeline_update_withteams(t *testing.T) {
+	resName := acctest.RandString(12)
+	resNameNew := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -304,23 +318,23 @@ func TestAccPipeline_update_withteams(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasicWithTeam("foo"),
+				Config: testAccPipelineConfigBasicWithTeam(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Quick check to confirm the local state is correct before we update it
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resName)),
 				),
 			},
 			{
-				Config: testAccPipelineConfigBasicWithTeam("bar"),
+				Config: testAccPipelineConfigBasicWithTeam(resNameNew),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Confirm the pipeline has the updated values in Buildkite's system
-					testAccCheckPipelineRemoteValues(&resourcePipeline, "Test Pipeline bar"),
+					testAccCheckPipelineRemoteValues(&resourcePipeline, fmt.Sprintf("Test Pipeline %s", resNameNew)),
 					// Confirm the pipeline has the updated values in terraform state
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline bar"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s", resNameNew)),
 				),
 			},
 		},
@@ -329,6 +343,7 @@ func TestAccPipeline_update_withteams(t *testing.T) {
 
 // Confirm that this resource can be imported
 func TestAccPipeline_import(t *testing.T) {
+	resName := acctest.RandString(12)
 	var resourcePipeline PipelineNode
 
 	resource.Test(t, resource.TestCase{
@@ -337,12 +352,12 @@ func TestAccPipeline_import(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasic("foo"),
+				Config: testAccPipelineConfigBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists("buildkite_pipeline.foobar", &resourcePipeline),
 					// Quick check to confirm the local state is correct before we re-import it
-					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", "Test Pipeline foo"),
+					resource.TestCheckResourceAttr("buildkite_pipeline.foobar", "name", fmt.Sprintf("Test Pipeline %s",resName)),
 				),
 			},
 			{
@@ -358,6 +373,7 @@ func TestAccPipeline_import(t *testing.T) {
 
 // Confirm that this resource can be removed
 func TestAccPipeline_disappears(t *testing.T) {
+	resName := acctest.RandString(12)
 	var node PipelineNode
 	resourceName := "buildkite_pipeline.foobar"
 
@@ -367,7 +383,7 @@ func TestAccPipeline_disappears(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineConfigBasic("foo"),
+				Config: testAccPipelineConfigBasic(resName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists(resourceName, &node),
@@ -395,6 +411,7 @@ func testAccPipelineDeletionProtectionConfig(name string, deletion_protection bo
 }
 
 func TestAccPipelineDeletionProtection_create(t *testing.T) {
+	resName := acctest.RandString(12)
 	var node PipelineNode
 	resourceName := "buildkite_pipeline.deletion_test"
 
@@ -404,7 +421,7 @@ func TestAccPipelineDeletionProtection_create(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineDeletionProtectionConfig("this_should_pass", false),
+				Config: testAccPipelineDeletionProtectionConfig(resName, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists(resourceName, &node),
@@ -417,6 +434,8 @@ func TestAccPipelineDeletionProtection_create(t *testing.T) {
 }
 
 func TestAccPipelineDeletionProtection_update(t *testing.T) {
+	resName := acctest.RandString(12)
+	resNameNew := acctest.RandString(12)
 	var node PipelineNode
 	resourceName := "buildkite_pipeline.deletion_test"
 
@@ -426,7 +445,7 @@ func TestAccPipelineDeletionProtection_update(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineDeletionProtectionConfig("deletion_protection_update", true),
+				Config: testAccPipelineDeletionProtectionConfig(resName, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists(resourceName, &node),
@@ -435,7 +454,7 @@ func TestAccPipelineDeletionProtection_update(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccPipelineDeletionProtectionConfig("deletion_protection_update", false),
+				Config: testAccPipelineDeletionProtectionConfig(resNameNew, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists(resourceName, &node),
@@ -448,6 +467,7 @@ func TestAccPipelineDeletionProtection_update(t *testing.T) {
 }
 
 func TestAccPipelineDeletionProtection_import(t *testing.T) {
+	resName := acctest.RandString(12)
 	var node PipelineNode
 	resourceName := "buildkite_pipeline.deletion_test"
 
@@ -457,12 +477,12 @@ func TestAccPipelineDeletionProtection_import(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccPipelineDeletionProtectionConfig("this_should_pass", false),
+				Config: testAccPipelineDeletionProtectionConfig(resName, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists(resourceName, &node),
 					// Ensure deletion_protection is present in the config
-					resource.TestCheckResourceAttr(resourceName, "name", "this_should_pass"),
+					resource.TestCheckResourceAttr(resourceName, "name", resName),
 				),
 			},
 			{
@@ -477,11 +497,12 @@ func TestAccPipelineDeletionProtection_import(t *testing.T) {
 }
 
 func TestAccPipelineBranchConfiguration(t *testing.T) {
+	resName := acctest.RandString(12)
 	var node PipelineNode
 	resourceName := "buildkite_pipeline.branch_config"
 	config := `
 		resource "buildkite_pipeline" "branch_config" {
-			name = "Test Pipeline branch_config"
+			name = "Test Pipeline %s"
 			repository = "https://github.com/buildkite/terraform-provider-buildkite.git"
 	        branch_configuration = "%s"
 		}
@@ -493,7 +514,7 @@ func TestAccPipelineBranchConfiguration(t *testing.T) {
 		CheckDestroy:             testAccCheckPipelineResourceDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: fmt.Sprintf(config, "main"),
+				Config: fmt.Sprintf(config, resName, "main"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists(resourceName, &node),
@@ -502,7 +523,7 @@ func TestAccPipelineBranchConfiguration(t *testing.T) {
 				),
 			},
 			{
-				Config: fmt.Sprintf(config, ""),
+				Config: fmt.Sprintf(config, resName, ""),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// Confirm the pipeline exists in the buildkite API
 					testAccCheckPipelineExists(resourceName, &node),
