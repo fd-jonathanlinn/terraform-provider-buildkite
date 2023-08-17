@@ -172,7 +172,7 @@ func (p *pipelineResource) Configure(ctx context.Context, req resource.Configure
 }
 
 func (p *pipelineResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan, state pipelineResourceModel
+	var plan pipelineResourceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -221,9 +221,7 @@ func (p *pipelineResource) Create(ctx context.Context, req resource.CreateReques
 	}
 	log.Printf("Successfully created pipeline with id '%s'.", response.PipelineCreate.Pipeline.Id)
 
-	setPipelineModel(&state, &response.PipelineCreate.Pipeline)
-	state.DeletionProtection = plan.DeletionProtection
-	state.ArchiveOnDelete = plan.ArchiveOnDelete
+	setPipelineModel(&plan, &response.PipelineCreate.Pipeline)
 
 	if len(plan.ProviderSettings) > 0 {
 		pipelineExtraInfo, err := updatePipelineExtraInfo(response.PipelineCreate.Pipeline.Slug, plan.ProviderSettings[0], p.client)
@@ -232,7 +230,7 @@ func (p *pipelineResource) Create(ctx context.Context, req resource.CreateReques
 			return
 		}
 
-		updatePipelineResourceExtraInfo(&state, &pipelineExtraInfo)
+		updatePipelineResourceExtraInfo(&plan, &pipelineExtraInfo)
 	} else {
 		// no provider_settings provided, but we still need to read in the badge url
 		extraInfo, err := getPipelineExtraInfo(p.client, response.PipelineCreate.Pipeline.Slug)
@@ -240,10 +238,10 @@ func (p *pipelineResource) Create(ctx context.Context, req resource.CreateReques
 			resp.Diagnostics.AddError("Unable to read pipeline info from REST", err.Error())
 			return
 		}
-		state.BadgeUrl = types.StringValue(extraInfo.BadgeUrl)
+		plan.BadgeUrl = types.StringValue(extraInfo.BadgeUrl)
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (p *pipelineResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
